@@ -1,5 +1,7 @@
 # Hungry Noodle Game Plan
 
+An Android App game based on Snake.
+
 ## 🎯 Target Audience
 
 **Casual Mobile Gamers**
@@ -9,12 +11,13 @@
 - Visual Feedback: Clear, colorful, satisfying animations
 - Progression: Frequent small rewards, clear next goals
 - Family-Friendly: Cute aesthetics, no violence, PEGI 3/ESRB E rating
+- Playable with one hand.
 
 ## 🏗️ Technical Architecture
 
 ### Tech Stack
 
-- **Frontend**: Angular 20+ with standalone components
+- **Frontend**: Angular 20+ with standalone components, designed for a vertical (phone) screen.
 - **Game Engine**: HTML5 Canvas with custom lightweight engine
 - **State Management**: Angular Signals + Resource API
 - **Styling**: Tailwind + custom CSS for game UI
@@ -23,6 +26,8 @@
 - **Localization**: Angular i18n package (English first, expandable)
 - **Offline Storage**: IndexedDB via Angular service
 - **Database**: SQLite (local) + PostgreSQL (server) for leaderboards
+- **Authentication**: Google Play
+- **Monetization**: Google Pay
 
 ### Core Services Structure
 
