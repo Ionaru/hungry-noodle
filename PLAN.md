@@ -34,8 +34,8 @@ An Android App game based on Snake.
 - Extends https://angular.dev/style-guide
 - Always use descriptive names.
 - Do not use decorators like `@ViewChild` or `@HostBinding`, but their signal-based equivalents.
-- Do not suffix components with "component"
-- Do not suffic services with "service"
+- Do not suffix components with "component" in both class name and file name
+- Do not suffic services with "service" in both class name and file name
 - Split up Component logic and HTML when the component reaches more than 100 lines.
 
 ### Core Services Structure
@@ -43,7 +43,7 @@ An Android App game based on Snake.
 ```typescript
 // Game state using Signals
 @Injectable()
-export class GameStateService {
+export class GameState {
   // Reactive game state
   score = signal(0);
   snake = signal<SnakeSegment[]>([]);
@@ -57,14 +57,14 @@ export class GameStateService {
 
 // Currency & Progression using Resource API
 @Injectable()
-export class ProgressionService {
+export class Progression {
   private noodleCoins = signal(0);
   private unlockedMaps = signal<string[]>(["classic"]);
 
   // Resource for server sync when online
   leaderboard = resource({
-    request: () => ({ playerId: this.getPlayerId() }),
-    loader: ({ request }) => this.syncLeaderboard(request.playerId),
+    params: () => ({ playerId: this.getPlayerId() }),
+    loader: ({ params }) => this.syncLeaderboard(params.playerId),
   });
 }
 ```

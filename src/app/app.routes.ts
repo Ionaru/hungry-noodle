@@ -9,43 +9,32 @@ export const routes: Routes = [
   {
     path: "menu",
     loadComponent: () =>
-      import("./components/main-menu/main-menu.component").then(
-        (m) => m.MainMenuComponent,
-      ),
+      import("./components/main-menu/main-menu").then((m) => m.MainMenu),
   },
   {
     path: "play",
-    loadComponent: () =>
-      import("./components/play/play.component").then((m) => m.PlayComponent),
+    loadComponent: () => import("./components/play/play").then((m) => m.Play),
   },
   // Placeholder routes for future implementation
   {
     path: "progression",
     loadComponent: () =>
-      import("./components/main-menu/main-menu.component").then(
-        (m) => m.MainMenuComponent,
-      ), // Temporary redirect
+      import("./components/main-menu/main-menu").then((m) => m.MainMenu), // Temporary redirect
   },
   {
     path: "shop",
     loadComponent: () =>
-      import("./components/main-menu/main-menu.component").then(
-        (m) => m.MainMenuComponent,
-      ), // Temporary redirect
+      import("./components/main-menu/main-menu").then((m) => m.MainMenu), // Temporary redirect
   },
   {
     path: "challenges",
     loadComponent: () =>
-      import("./components/main-menu/main-menu.component").then(
-        (m) => m.MainMenuComponent,
-      ), // Temporary redirect
+      import("./components/main-menu/main-menu").then((m) => m.MainMenu), // Temporary redirect
   },
   {
     path: "settings",
     loadComponent: () =>
-      import("./components/main-menu/main-menu.component").then(
-        (m) => m.MainMenuComponent,
-      ), // Temporary redirect
+      import("./components/main-menu/main-menu").then((m) => m.MainMenu), // Temporary redirect
   },
   {
     path: "**",

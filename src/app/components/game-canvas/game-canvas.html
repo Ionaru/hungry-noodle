@@ -1,0 +1,108 @@
+<div class="flex min-h-screen flex-col bg-gray-900">
+  <!-- Game HUD -->
+  <div class="flex items-center justify-between bg-gray-800 p-4 text-white">
+    <div class="flex gap-6">
+      <div class="text-center">
+        <div class="text-xl font-bold">{{ gameState.score() }}</div>
+        <div class="text-xs opacity-75">Score</div>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold">{{ gameState.currentLength() }}</div>
+        <div class="text-xs opacity-75">Length</div>
+      </div>
+      <div class="text-center">
+        <div class="text-xl font-bold">
+          {{ formatTime(gameState.gameTime()) }}
+        </div>
+        <div class="text-xs opacity-75">Time</div>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button
+        (click)="togglePause()"
+        class="rounded bg-blue-600 px-4 py-2 font-semibold transition-colors hover:bg-blue-700"
+      >
+        {{ gameState.gameStatus() === "paused" ? "▶️" : "⏸️" }}
+      </button>
+      <button
+        (click)="goBack()"
+        class="rounded bg-red-600 px-4 py-2 font-semibold transition-colors hover:bg-red-700"
+      >
+        🏠 Menu
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Canvas Container -->
+  <div class="flex flex-1 items-center justify-center p-4">
+    <div class="relative">
+      <canvas
+        #gameCanvas
+        class="rounded-lg border-4 border-white bg-green-100 shadow-2xl"
+        [width]="gameState.canvasWidth()"
+        [height]="gameState.canvasHeight()"
+      >
+      </canvas>
+
+      <!-- Game Status Overlay -->
+      @if (gameState.gameStatus() !== "playing") {
+        <div
+          class="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50"
+        >
+          <div class="max-w-sm rounded-xl bg-white p-8 text-center">
+            @switch (gameState.gameStatus()) {
+              @case ("menu") {
+                <h2 class="mb-4 text-2xl font-bold">🐍 Ready to Play?</h2>
+                <button
+                  (click)="startGame()"
+                  class="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-700"
+                >
+                  Start Game
+                </button>
+              }
+              @case ("paused") {
+                <h2 class="mb-4 text-2xl font-bold">⏸️ Game Paused</h2>
+                <button
+                  (click)="togglePause()"
+                  class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+                >
+                  Resume
+                </button>
+              }
+              @case ("gameOver") {
+                <h2 class="mb-4 text-2xl font-bold">🎮 Game Over!</h2>
+                <div class="mb-4 space-y-2">
+                  <div>
+                    Final Score: <strong>{{ gameState.score() }}</strong>
+                  </div>
+                  <div>
+                    Final Length:
+                    <strong>{{ gameState.currentLength() }}</strong>
+                  </div>
+                  <div>
+                    Coins Earned: <strong>+{{ coinsEarned() }}</strong> 🪙
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    (click)="startGame()"
+                    class="rounded bg-green-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-green-700"
+                  >
+                    Play Again
+                  </button>
+                  <button
+                    (click)="goBack()"
+                    class="rounded bg-gray-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-700"
+                  >
+                    Menu
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

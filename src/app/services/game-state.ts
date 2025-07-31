@@ -18,7 +18,7 @@ export type Direction = "up" | "down" | "left" | "right";
 @Injectable({
   providedIn: "root",
 })
-export class GameStateService {
+export class GameState {
   // Core game state signals
   readonly score = signal(0);
   readonly snake = signal<SnakeSegment[]>([]);

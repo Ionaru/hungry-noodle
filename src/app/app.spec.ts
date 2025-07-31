@@ -1,6 +1,7 @@
-import { describe, test, expect, beforeEach } from "vitest";
 import { provideZonelessChangeDetection } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { describe, test, expect, beforeEach } from "vitest";
+
 import { App } from "./app";
 
 describe("App", () => {

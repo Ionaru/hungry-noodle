@@ -1,7 +1,8 @@
+import { CommonModule } from "@angular/common";
 import { Component, signal, inject, OnInit, computed } from "@angular/core";
 import { Router } from "@angular/router";
-import { CommonModule } from "@angular/common";
-import { ProgressionService } from "../../services/progression.service";
+
+import { Progression } from "../../services/progression";
 
 interface MenuOption {
   id: string;
@@ -65,15 +66,13 @@ interface MenuOption {
     </div>
   `,
 })
-export class MainMenuComponent implements OnInit {
+export class MainMenu implements OnInit {
   private readonly router = inject(Router);
-  private readonly progressionService = inject(ProgressionService);
+  private readonly progression = inject(Progression);
 
   // Game state signals
-  readonly highScore = computed(
-    () => this.progressionService.playerStats().highScore,
-  );
-  readonly noodleCoins = this.progressionService.noodleCoins;
+  readonly highScore = computed(() => this.progression.playerStats().highScore);
+  readonly noodleCoins = this.progression.noodleCoins;
   readonly version = "0.1.0";
 
   // Menu configuration
@@ -128,6 +127,6 @@ export class MainMenuComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.progressionService.loadPlayerData();
+    this.progression.loadPlayerData();
   }
 }

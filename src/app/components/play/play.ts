@@ -1,10 +1,11 @@
 import { Component } from "@angular/core";
-import { GameCanvasComponent } from "../game-canvas/game-canvas.component";
+
+import { GameCanvas } from "../game-canvas/game-canvas";
 
 @Component({
   selector: "app-play",
   standalone: true,
-  imports: [GameCanvasComponent],
+  imports: [GameCanvas],
   template: ` <app-game-canvas></app-game-canvas> `,
 })
-export class PlayComponent {}
+export class Play {}

@@ -18,7 +18,7 @@ export interface UnlockedContent {
 @Injectable({
   providedIn: "root",
 })
-export class ProgressionService {
+export class Progression {
   // Currency signals
   readonly noodleCoins = signal(0);
   readonly goldenNoodles = signal(0);
@@ -156,7 +156,7 @@ export class ProgressionService {
   private async syncLeaderboard(playerId: string): Promise<never[]> {
     // TODO: Implement server sync
     console.log("Syncing leaderboard for player:", playerId);
-    return Promise.resolve([]);
+    return [];
   }
 
   // Analytics methods (placeholders)
@@ -184,7 +184,7 @@ export class ProgressionService {
 
     this.playerStats.set({
       gamesPlayed: 23,
-      totalScore: 15420,
+      totalScore: 15_420,
       highScore: 1250,
       totalLength: 847,
       perfectGames: 3,
