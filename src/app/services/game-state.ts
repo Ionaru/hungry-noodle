@@ -27,10 +27,10 @@ export class GameState {
   readonly direction = signal<Direction>("right");
   readonly gameTime = signal(0);
 
-  // Canvas and game settings
-  readonly canvasWidth = signal(800);
-  readonly canvasHeight = signal(600);
-  readonly gridSize = signal(20);
+  // Canvas and game settings - responsive for mobile
+  readonly canvasWidth = signal(320); // Will be updated dynamically
+  readonly canvasHeight = signal(480); // Will be updated dynamically
+  readonly gridSize = signal(16); // Smaller grid for mobile
 
   // Game statistics
   readonly currentLength = computed(() => this.snake().length);
@@ -46,6 +46,40 @@ export class GameState {
     gridWidth: Math.floor(this.canvasWidth() / this.gridSize()),
     gridHeight: Math.floor(this.canvasHeight() / this.gridSize()),
   }));
+
+  // Mobile-responsive canvas sizing
+  updateCanvasSize(containerWidth: number, containerHeight: number): void {
+    // Leave space for HUD and controls (about 120px total)
+    const availableHeight = containerHeight - 120;
+    const availableWidth = containerWidth - 32; // 16px padding on each side
+
+    // For mobile (portrait), prioritize height and keep aspect ratio suitable for snake
+    const aspectRatio = 0.75; // 3:4 ratio works well for portrait snake game
+
+    let newWidth = availableWidth;
+    let newHeight = availableWidth / aspectRatio;
+
+    // If height exceeds available space, scale down
+    if (newHeight > availableHeight) {
+      newHeight = availableHeight;
+      newWidth = newHeight * aspectRatio;
+    }
+
+    // Ensure minimum playable size
+    const minWidth = 280;
+    const minHeight = 360;
+
+    newWidth = Math.max(newWidth, minWidth);
+    newHeight = Math.max(newHeight, minHeight);
+
+    // Round to multiples of grid size for clean rendering
+    const gridSize = this.gridSize();
+    newWidth = Math.floor(newWidth / gridSize) * gridSize;
+    newHeight = Math.floor(newHeight / gridSize) * gridSize;
+
+    this.canvasWidth.set(newWidth);
+    this.canvasHeight.set(newHeight);
+  }
 
   // Game actions
   startGame(): void {

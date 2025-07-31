@@ -12,6 +12,7 @@ An Android App game based on Snake.
 - Progression: Frequent small rewards, clear next goals
 - Family-Friendly: Cute aesthetics, no violence, PEGI 3/ESRB E rating
 - Playable with one hand.
+- No keyboard controls.
 
 ## 🏗️ Technical Architecture
 

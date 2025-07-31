@@ -16,50 +16,55 @@ interface MenuOption {
   selector: "app-main-menu",
   template: `
     <div
-      class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-6"
+      class="safe-area-top safe-area-bottom flex h-screen flex-col items-center justify-between bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-6"
     >
-      <!-- Game Title -->
-      <div class="mb-12 text-center">
-        <h1 class="mb-4 text-6xl font-bold text-white drop-shadow-lg">
+      <!-- Game Title Section -->
+      <div class="flex flex-1 flex-col items-center justify-center text-center">
+        <h1
+          class="mb-4 text-5xl font-bold text-white drop-shadow-lg sm:text-6xl"
+        >
           🍜 Hungry Noodle
         </h1>
-        <p class="text-xl text-white opacity-90">
+        <p class="text-lg text-white opacity-90 sm:text-xl">
           Feed the noodle, grow your score!
         </p>
-      </div>
 
-      <!-- Menu Options -->
-      <div class="w-full max-w-sm space-y-4">
-        @for (option of menuOptions(); track option.id) {
-          <button
-            (click)="handleMenuClick(option)"
-            [disabled]="option.disabled"
-            class="flex w-full transform items-center justify-center gap-3 rounded-xl bg-white px-6 py-4 text-lg font-semibold text-gray-800 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gray-50 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span class="text-2xl">{{ option.icon }}</span>
-            <span>{{ option.label }}</span>
-          </button>
-        }
-      </div>
-
-      <!-- Game Stats Preview -->
-      <div
-        class="mt-12 rounded-xl bg-white/20 p-4 text-center text-white backdrop-blur-sm"
-      >
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <div class="text-2xl font-bold">{{ highScore() }}</div>
-            <div class="text-sm opacity-75">High Score</div>
-          </div>
-          <div>
-            <div class="text-2xl font-bold">{{ noodleCoins() }}</div>
-            <div class="text-sm opacity-75">🪙 Coins</div>
+        <!-- Game Stats Preview - Mobile Optimized -->
+        <div
+          class="mt-8 rounded-2xl bg-white/20 p-4 text-white backdrop-blur-sm"
+        >
+          <div class="grid grid-cols-2 gap-6">
+            <div class="text-center">
+              <div class="text-2xl font-bold">{{ highScore() }}</div>
+              <div class="text-sm opacity-75">High Score</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold">{{ noodleCoins() }}</div>
+              <div class="text-sm opacity-75">🪙 Coins</div>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Menu Options - Mobile Optimized -->
+      <div class="w-full max-w-sm space-y-3">
+        @for (option of menuOptions(); track option.id) {
+          <button
+            (click)="handleMenuClick(option)"
+            [disabled]="option.disabled"
+            class="flex w-full transform items-center justify-center gap-4 rounded-2xl bg-white px-6 py-5 text-lg font-semibold text-gray-800 shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gray-50 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span class="text-3xl">{{ option.icon }}</span>
+            <span class="flex-1 text-left">{{ option.label }}</span>
+            @if (option.disabled) {
+              <span class="text-sm text-gray-500">Soon</span>
+            }
+          </button>
+        }
+      </div>
+
       <!-- Version Info -->
-      <div class="mt-8 text-sm text-white/60">v{{ version }}</div>
+      <div class="mt-4 text-sm text-white/60">v{{ version }}</div>
     </div>
   `,
 })
