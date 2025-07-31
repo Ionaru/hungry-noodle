@@ -26,7 +26,7 @@ describe("App", () => {
   test("should render title", () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector("h1")?.textContent).toContain(
-      "Welcome to Tauri + Angular!"
+      "Welcome to Tauri + Angular!",
     );
   });
 });
