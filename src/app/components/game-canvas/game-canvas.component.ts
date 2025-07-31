@@ -8,15 +8,12 @@ import {
   AfterViewInit,
   signal,
 } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { GameStateService, Direction } from "../../services/game-state.service";
 import { ProgressionService } from "../../services/progression.service";
 
 @Component({
   selector: "app-game-canvas",
-  standalone: true,
-  imports: [CommonModule],
   template: `
     <div class="flex min-h-screen flex-col bg-gray-900">
       <!-- Game HUD -->
@@ -123,41 +120,6 @@ import { ProgressionService } from "../../services/progression.service";
               </div>
             </div>
           }
-        </div>
-      </div>
-
-      <!-- Touch Controls for Mobile -->
-      <div class="p-4 md:hidden">
-        <div class="mx-auto grid max-w-48 grid-cols-3 gap-2">
-          <div></div>
-          <button
-            (click)="changeDirection('up')"
-            class="rounded-lg bg-gray-700 p-4 text-2xl text-white transition-colors hover:bg-gray-600"
-          >
-            ⬆️
-          </button>
-          <div></div>
-          <button
-            (click)="changeDirection('left')"
-            class="rounded-lg bg-gray-700 p-4 text-2xl text-white transition-colors hover:bg-gray-600"
-          >
-            ⬅️
-          </button>
-          <div></div>
-          <button
-            (click)="changeDirection('right')"
-            class="rounded-lg bg-gray-700 p-4 text-2xl text-white transition-colors hover:bg-gray-600"
-          >
-            ➡️
-          </button>
-          <div></div>
-          <button
-            (click)="changeDirection('down')"
-            class="rounded-lg bg-gray-700 p-4 text-2xl text-white transition-colors hover:bg-gray-600"
-          >
-            ⬇️
-          </button>
-          <div></div>
         </div>
       </div>
     </div>

@@ -29,6 +29,15 @@ An Android App game based on Snake.
 - **Authentication**: Google Play
 - **Monetization**: Google Pay
 
+#### Angular Style Guide
+
+- Extends https://angular.dev/style-guide
+- Always use descriptive names.
+- Do not use decorators like `@ViewChild` or `@HostBinding`, but their signal-based equivalents.
+- Do not suffix components with "component"
+- Do not suffic services with "service"
+- Split up Component logic and HTML when the component reaches more than 100 lines.
+
 ### Core Services Structure
 
 ```typescript
