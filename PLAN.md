@@ -34,9 +34,13 @@ An Android App game based on Snake.
 - Extends https://angular.dev/style-guide
 - Always use descriptive names.
 - Do not use decorators like `@ViewChild` or `@HostBinding`, but their signal-based equivalents.
-- Do not suffix components with "component" in both class name and file name
-- Do not suffic services with "service" in both class name and file name
+- Do not suffix components with "component" in both class name and file name.
+- Do not suffic services with "service" in both class name and file name.
 - Split up Component logic and HTML when the component reaches more than 100 lines.
+- Use the native private "#" prefix instead of the Typescript "private".
+- Never import CommonModule.
+- Use the shorthand html closing tag for Angular components, like this: `<app-component />`.
+- Do not add `standalone: true` to components, it is the default.
 
 ### Core Services Structure
 
@@ -227,7 +231,7 @@ Main Menu
 
 ```typescript
 @Injectable()
-export class AnalyticsService {
+export class Analytics {
   trackGameStart(snakeType: string, mapType: string) {
     gtag("event", "game_start", {
       snake_type: snakeType,
@@ -261,7 +265,7 @@ export class AnalyticsService {
 
 ```typescript
 @Injectable()
-export class DataSyncService {
+export class DataSync {
   // Offline-first approach
   private offlineData = signal({
     highScores: [],
@@ -292,7 +296,7 @@ This uses the GestureController from @ionic/angular/standalone
 
 ```typescript
 @Component({...})
-export class TouchControlsComponent {
+export class TouchControls {
 
   readonly #gestureController = inject(GestureController);
   readonly #element = inject(ElementRef)
@@ -381,7 +385,7 @@ export class TouchControlsComponent {
 ```typescript
 // Prepare for future localization
 @Injectable()
-export class LocalizationService {
+export class Localization {
   private currentLang = signal("en");
 
   // Text resources structure

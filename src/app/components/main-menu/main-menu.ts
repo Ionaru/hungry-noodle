@@ -1,4 +1,3 @@
-import { CommonModule } from "@angular/common";
 import { Component, signal, inject, OnInit, computed } from "@angular/core";
 import { Router } from "@angular/router";
 
@@ -15,8 +14,6 @@ interface MenuOption {
 
 @Component({
   selector: "app-main-menu",
-  standalone: true,
-  imports: [CommonModule],
   template: `
     <div
       class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-6"

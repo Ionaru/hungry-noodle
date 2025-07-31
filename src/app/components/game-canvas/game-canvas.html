@@ -36,10 +36,10 @@
 
   <!-- Game Canvas Container -->
   <div class="flex flex-1 items-center justify-center p-4">
-    <div class="relative">
+    <div class="relative" #gestureContainer>
       <canvas
         #gameCanvas
-        class="rounded-lg border-4 border-white bg-green-100 shadow-2xl"
+        class="pointer-events-none rounded-lg border-4 border-white bg-green-100 shadow-2xl"
         [width]="gameState.canvasWidth()"
         [height]="gameState.canvasHeight()"
       >
