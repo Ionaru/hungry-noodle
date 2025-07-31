@@ -64,6 +64,7 @@ export class GameState {
   endGame(): void {
     this.gameStatus.set("gameOver");
     // TODO: Save high score, update statistics
+    // This will be handled by the game canvas component
   }
 
   resetGame(): void {
@@ -93,6 +94,92 @@ export class GameState {
     this.score.update((current) => current + points);
   }
 
+  // Game mechanics
+  moveSnake(): void {
+    const snake = this.snake();
+    const direction = this.direction();
+    const head = snake[0];
+
+    // Calculate new head position
+    let newHead: SnakeSegment;
+    switch (direction) {
+      case "up": {
+        newHead = { x: head.x, y: head.y - 1 };
+        break;
+      }
+      case "down": {
+        newHead = { x: head.x, y: head.y + 1 };
+        break;
+      }
+      case "left": {
+        newHead = { x: head.x - 1, y: head.y };
+        break;
+      }
+      case "right": {
+        newHead = { x: head.x + 1, y: head.y };
+        break;
+      }
+    }
+
+    // Add new head to front of snake
+    const newSnake = [newHead, ...snake];
+
+    // Remove tail (will be added back if food is eaten)
+    newSnake.pop();
+
+    this.snake.set(newSnake);
+  }
+
+  checkCollision(): boolean {
+    const snake = this.snake();
+    const head = snake[0];
+    const { gridWidth, gridHeight } = this.canvasSize();
+
+    // Wall collision
+    if (
+      head.x < 0 ||
+      head.x >= gridWidth ||
+      head.y < 0 ||
+      head.y >= gridHeight
+    ) {
+      return true;
+    }
+
+    // Self collision (check if head collides with any body segment)
+    for (let index = 1; index < snake.length; index++) {
+      if (head.x === snake[index].x && head.y === snake[index].y) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  checkFoodConsumption(): Food | null {
+    const snake = this.snake();
+    const head = snake[0];
+    const food = this.food();
+
+    for (const foodItem of food) {
+      if (head.x === foodItem.x && head.y === foodItem.y) {
+        // Remove eaten food
+        this.food.set([]);
+
+        // Grow snake by adding segment at the end
+        const tail = snake.at(-1);
+        const newSnake = [...snake];
+        if (tail) {
+          newSnake.push(tail);
+        }
+        this.snake.set(newSnake);
+
+        return foodItem;
+      }
+    }
+
+    return null;
+  }
+
   // Private initialization methods
   private initializeGame(): void {
     const centerX = Math.floor(this.canvasSize().gridWidth / 2);
@@ -109,7 +196,7 @@ export class GameState {
     this.spawnFood();
   }
 
-  private spawnFood(): void {
+  spawnFood(): void {
     const gridWidth = this.canvasSize().gridWidth;
     const gridHeight = this.canvasSize().gridHeight;
     const snake = this.snake();

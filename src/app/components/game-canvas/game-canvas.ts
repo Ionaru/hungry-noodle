@@ -54,12 +54,6 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
         maxAngle: 90,
         el: this.gestureContainer().nativeElement,
         gestureName: "swipe",
-        // onStart: (event) => {
-        //   console.log("swipe started", event);
-        // },
-        // onMove: (event) => {
-        //   console.log("swipe moved", event);
-        // },
         onEnd: (event) => {
           console.log("swipe ended", event.deltaX, event.deltaY);
           this.handleSwipe(event);
@@ -67,6 +61,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       },
       true,
     );
+    // Enable gesture by default
+    this.#gesture.enable();
   }
 
   ngOnDestroy(): void {
@@ -106,9 +102,27 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   private update(): void {
     if (this.#gameState.gameStatus() !== "playing") return;
 
-    // TODO: Implement snake movement, collision detection, food consumption
-    // This is a placeholder for the actual game logic
+    // Update game time
     this.#gameState.gameTime.update((time) => time + this.#gameSpeed / 1000);
+
+    // Move snake
+    this.#gameState.moveSnake();
+
+    // Check for collisions
+    if (this.#gameState.checkCollision()) {
+      this.#gameState.endGame();
+      this.handleGameOver();
+      return;
+    }
+
+    // Check for food consumption
+    const foodEaten = this.#gameState.checkFoodConsumption();
+    if (foodEaten) {
+      this.#gameState.updateScore(foodEaten.value);
+      this.coinsEarned.update((coins) => coins + foodEaten.value);
+      this.#progression.earnNoodleCoins(foodEaten.value);
+      this.#gameState.spawnFood();
+    }
   }
 
   private render(): void {
@@ -182,7 +196,6 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   // Game controls
   startGame(): void {
     this.#gameState.startGame();
-    this.#gesture?.enable();
     this.coinsEarned.set(0);
   }
 
@@ -225,5 +238,23 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString()}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  private handleGameOver(): void {
+    // Update progression stats
+    this.#progression.updateStats({
+      gamesPlayed: this.#progression.playerStats().gamesPlayed + 1,
+      totalScore:
+        this.#progression.playerStats().totalScore + this.#gameState.score(),
+      highScore: Math.max(
+        this.#progression.playerStats().highScore,
+        this.#gameState.score(),
+      ),
+      totalLength:
+        this.#progression.playerStats().totalLength +
+        this.#gameState.currentLength(),
+      playTime:
+        this.#progression.playerStats().playTime + this.#gameState.gameTime(),
+    });
   }
 }
