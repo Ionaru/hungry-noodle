@@ -35,12 +35,13 @@ export class GameCanvas implements OnInit, AfterViewInit, OnDestroy {
   private gameLoopId?: number;
   private lastUpdateTime = 0;
   private readonly gameSpeed = 150; // milliseconds between updates
+  private readonly boundHandleKeyPress = this.handleKeyPress.bind(this);
 
   readonly coinsEarned = signal(0);
 
   ngOnInit(): void {
     // Set up keyboard controls
-    document.addEventListener("keydown", this.handleKeyPress.bind(this));
+    document.addEventListener("keydown", this.boundHandleKeyPress);
   }
 
   ngAfterViewInit(): void {
@@ -48,7 +49,7 @@ export class GameCanvas implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener("keydown", this.handleKeyPress.bind(this));
+    document.removeEventListener("keydown", this.boundHandleKeyPress);
     if (this.gameLoopId) {
       cancelAnimationFrame(this.gameLoopId);
     }
@@ -147,7 +148,6 @@ export class GameCanvas implements OnInit, AfterViewInit, OnDestroy {
     const gridSize = this._gameState.gridSize();
 
     for (const item of food) {
-      if (!this.ctx) continue;
       this.ctx.fillStyle = item.type === "golden" ? "#F59E0B" : "#EF4444"; // Golden or red
       this.ctx.fillRect(
         item.x * gridSize + 2,

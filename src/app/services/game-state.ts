@@ -119,7 +119,9 @@ export class GameState {
     // Find empty position for food
     do {
       foodPosition = {
+        // eslint-disable-next-line sonarjs/pseudo-random
         x: Math.floor(Math.random() * gridWidth),
+        // eslint-disable-next-line sonarjs/pseudo-random
         y: Math.floor(Math.random() * gridHeight),
       };
     } while (
@@ -132,7 +134,9 @@ export class GameState {
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
+      // eslint-disable-next-line sonarjs/pseudo-random
       type: Math.random() < 0.1 ? "golden" : "normal",
+      // eslint-disable-next-line sonarjs/pseudo-random
       value: Math.random() < 0.1 ? 5 : 1,
     };
 

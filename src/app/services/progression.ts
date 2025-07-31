@@ -153,10 +153,10 @@ export class Progression {
     return "local-player-" + Date.now().toString();
   }
 
-  private async syncLeaderboard(playerId: string): Promise<never[]> {
+  private syncLeaderboard(playerId: string): Promise<never[]> {
     // TODO: Implement server sync
     console.log("Syncing leaderboard for player:", playerId);
-    return [];
+    return Promise.resolve([]);
   }
 
   // Analytics methods (placeholders)
