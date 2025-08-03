@@ -189,7 +189,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.startGameLoop();
   }
 
-    private startGameLoop(): void {
+  private startGameLoop(): void {
     const gameLoop = (currentTime: number) => {
       const deltaTime = currentTime - this.#lastUpdateTime;
 
@@ -199,7 +199,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       }
 
       // Update game time
-      if (deltaTime >= 16) { // ~60fps
+      if (deltaTime >= 16) {
+        // ~60fps
         this.updateGameTime(deltaTime);
         this.#lastUpdateTime = currentTime;
       }
@@ -235,10 +236,10 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       this.drawGrid(width, height, gridSize);
     }
 
-        // Draw world decorations for visual interest
+    // Draw world decorations for visual interest
     this.drawWorldDecorations();
 
-        // Draw game elements using viewport coordinates
+    // Draw game elements using viewport coordinates
     this.drawSnake();
     this.drawFood();
 
@@ -274,7 +275,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.#ctx.globalAlpha = 1; // Reset alpha
   }
 
-      private drawSnake(): void {
+  private drawSnake(): void {
     if (!this.#ctx) return;
 
     const snake = this.#gameState.snake();
@@ -302,12 +303,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
           const screenX = (segment.x - camera.x) * gridSize + 1;
           const screenY = (segment.y - camera.y) * gridSize + 1;
 
-          this.#ctx.fillRect(
-            screenX,
-            screenY,
-            gridSize - 2,
-            gridSize - 2,
-          );
+          this.#ctx.fillRect(screenX, screenY, gridSize - 2, gridSize - 2);
         }
       }
     }
@@ -415,17 +411,28 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     // Top shadow - show if there's content above viewport
     if (viewport.top > 0) {
       const gradient = this.#ctx.createLinearGradient(0, 0, 0, shadowSize);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + shadowOpacity.toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + shadowOpacity.toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(0, 0, width, shadowSize);
     }
 
     // Bottom shadow - show if there's content below viewport
     if (viewport.bottom < worldSize.gridHeight) {
-      const gradient = this.#ctx.createLinearGradient(0, height - shadowSize, 0, height);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, ' + shadowOpacity.toString() + ')');
+      const gradient = this.#ctx.createLinearGradient(
+        0,
+        height - shadowSize,
+        0,
+        height,
+      );
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+      gradient.addColorStop(
+        1,
+        "rgba(0, 0, 0, " + shadowOpacity.toString() + ")",
+      );
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(0, height - shadowSize, width, shadowSize);
     }
@@ -433,17 +440,28 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     // Left shadow - show if there's content to the left of viewport
     if (viewport.left > 0) {
       const gradient = this.#ctx.createLinearGradient(0, 0, shadowSize, 0);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + shadowOpacity.toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + shadowOpacity.toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(0, 0, shadowSize, height);
     }
 
     // Right shadow - show if there's content to the right of viewport
     if (viewport.right < worldSize.gridWidth) {
-      const gradient = this.#ctx.createLinearGradient(width - shadowSize, 0, width, 0);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, ' + shadowOpacity.toString() + ')');
+      const gradient = this.#ctx.createLinearGradient(
+        width - shadowSize,
+        0,
+        width,
+        0,
+      );
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+      gradient.addColorStop(
+        1,
+        "rgba(0, 0, 0, " + shadowOpacity.toString() + ")",
+      );
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(width - shadowSize, 0, shadowSize, height);
     }
@@ -453,44 +471,92 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
     // Top-left corner
     if (viewport.top > 0 && viewport.left > 0) {
-      const gradient = this.#ctx.createRadialGradient(0, 0, 0, 0, 0, cornerSize);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + (shadowOpacity * 0.7).toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const gradient = this.#ctx.createRadialGradient(
+        0,
+        0,
+        0,
+        0,
+        0,
+        cornerSize,
+      );
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + (shadowOpacity * 0.7).toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(0, 0, cornerSize, cornerSize);
     }
 
     // Top-right corner
     if (viewport.top > 0 && viewport.right < worldSize.gridWidth) {
-      const gradient = this.#ctx.createRadialGradient(width, 0, 0, width, 0, cornerSize);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + (shadowOpacity * 0.7).toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const gradient = this.#ctx.createRadialGradient(
+        width,
+        0,
+        0,
+        width,
+        0,
+        cornerSize,
+      );
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + (shadowOpacity * 0.7).toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(width - cornerSize, 0, cornerSize, cornerSize);
     }
 
     // Bottom-left corner
     if (viewport.bottom < worldSize.gridHeight && viewport.left > 0) {
-      const gradient = this.#ctx.createRadialGradient(0, height, 0, 0, height, cornerSize);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + (shadowOpacity * 0.7).toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const gradient = this.#ctx.createRadialGradient(
+        0,
+        height,
+        0,
+        0,
+        height,
+        cornerSize,
+      );
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + (shadowOpacity * 0.7).toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
       this.#ctx.fillRect(0, height - cornerSize, cornerSize, cornerSize);
     }
 
     // Bottom-right corner
-    if (viewport.bottom < worldSize.gridHeight && viewport.right < worldSize.gridWidth) {
-      const gradient = this.#ctx.createRadialGradient(width, height, 0, width, height, cornerSize);
-      gradient.addColorStop(0, 'rgba(0, 0, 0, ' + (shadowOpacity * 0.7).toString() + ')');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    if (
+      viewport.bottom < worldSize.gridHeight &&
+      viewport.right < worldSize.gridWidth
+    ) {
+      const gradient = this.#ctx.createRadialGradient(
+        width,
+        height,
+        0,
+        width,
+        height,
+        cornerSize,
+      );
+      gradient.addColorStop(
+        0,
+        "rgba(0, 0, 0, " + (shadowOpacity * 0.7).toString() + ")",
+      );
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
       this.#ctx.fillStyle = gradient;
-      this.#ctx.fillRect(width - cornerSize, height - cornerSize, cornerSize, cornerSize);
+      this.#ctx.fillRect(
+        width - cornerSize,
+        height - cornerSize,
+        cornerSize,
+        cornerSize,
+      );
     }
 
     this.#ctx.restore();
   }
 
-    private drawBackgroundPattern(): void {
+  private drawBackgroundPattern(): void {
     if (!this.#ctx) return;
 
     const canvas = this.canvas().nativeElement;
@@ -513,7 +579,12 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
         const screenY = (y - Math.floor(camera.y)) * gridSize - cameraOffsetY;
 
         // Only draw tiles that are actually visible on screen
-        if (screenX < width && screenY < height && screenX > -gridSize && screenY > -gridSize) {
+        if (
+          screenX < width &&
+          screenY < height &&
+          screenX > -gridSize &&
+          screenY > -gridSize
+        ) {
           // Create checkerboard pattern with subtle color variation
           const isEvenTile = (x + y) % 2 === 0;
 
@@ -527,7 +598,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.#ctx.restore();
   }
 
-    private drawWorldDecorations(): void {
+  private drawWorldDecorations(): void {
     if (!this.#ctx) return;
 
     const canvas = this.canvas().nativeElement;
@@ -557,8 +628,12 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
           const screenY = (y - Math.floor(camera.y)) * gridSize - cameraOffsetY;
 
           // Only draw decorations that are actually visible on screen
-          if (screenX < width + gridSize && screenY < height + gridSize &&
-              screenX > -gridSize && screenY > -gridSize) {
+          if (
+            screenX < width + gridSize &&
+            screenY < height + gridSize &&
+            screenX > -gridSize &&
+            screenY > -gridSize
+          ) {
             // Determine decoration type based on seed
             const decorationType = Math.floor(this.pseudoRandom(seed + 1) * 5);
 
@@ -571,7 +646,12 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.#ctx.restore();
   }
 
-  private drawDecoration(x: number, y: number, gridSize: number, type: number): void {
+  private drawDecoration(
+    x: number,
+    y: number,
+    gridSize: number,
+    type: number,
+  ): void {
     if (!this.#ctx) return;
 
     const centerX = x + gridSize / 2;
@@ -598,8 +678,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
         this.#ctx.fillStyle = "#EC4899";
         for (let index = 0; index < 4; index++) {
           const angle = (index * Math.PI) / 2;
-          const petalX = centerX + Math.cos(angle) * size / 2;
-          const petalY = centerY + Math.sin(angle) * size / 2;
+          const petalX = centerX + (Math.cos(angle) * size) / 2;
+          const petalY = centerY + (Math.sin(angle) * size) / 2;
           this.#ctx.beginPath();
           this.#ctx.arc(petalX, petalY, size / 4, 0, Math.PI * 2);
           this.#ctx.fill();
@@ -610,11 +690,28 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       case 2: {
         // Small plant
         this.#ctx.fillStyle = "#22C55E";
-        this.#ctx.fillRect(centerX - size / 6, centerY - size / 2, size / 3, size);
+        this.#ctx.fillRect(
+          centerX - size / 6,
+          centerY - size / 2,
+          size / 3,
+          size,
+        );
         // Leaves
         this.#ctx.beginPath();
-        this.#ctx.arc(centerX - size / 3, centerY - size / 4, size / 4, 0, Math.PI * 2);
-        this.#ctx.arc(centerX + size / 3, centerY - size / 4, size / 4, 0, Math.PI * 2);
+        this.#ctx.arc(
+          centerX - size / 3,
+          centerY - size / 4,
+          size / 4,
+          0,
+          Math.PI * 2,
+        );
+        this.#ctx.arc(
+          centerX + size / 3,
+          centerY - size / 4,
+          size / 4,
+          0,
+          Math.PI * 2,
+        );
         this.#ctx.fill();
         break;
       }
@@ -627,7 +724,12 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
         this.#ctx.fill();
         // Stem
         this.#ctx.fillStyle = "#F3F4F6";
-        this.#ctx.fillRect(centerX - size / 6, centerY - size / 4, size / 3, size / 2);
+        this.#ctx.fillRect(
+          centerX - size / 6,
+          centerY - size / 4,
+          size / 3,
+          size / 2,
+        );
         break;
       }
 
@@ -652,7 +754,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     return x - Math.floor(x);
   }
 
-    private drawFoodDirectionIndicator(): void {
+  private drawFoodDirectionIndicator(): void {
     if (!this.#ctx) return;
 
     const food = this.#gameState.food();
@@ -671,7 +773,10 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     let nearestDistance = Number.POSITIVE_INFINITY;
 
     for (const foodItem of food) {
-      const distance = Math.hypot(foodItem.x - snakeHead.x, foodItem.y - snakeHead.y);
+      const distance = Math.hypot(
+        foodItem.x - snakeHead.x,
+        foodItem.y - snakeHead.y,
+      );
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearestFood = foodItem;
@@ -711,13 +816,22 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     const sin = Math.sin(angle);
 
     // Calculate distances to each edge
-    const distanceToRightEdge = cos > 0 ? (width - margin - centerX) / cos : Number.POSITIVE_INFINITY;
-    const distanceToLeftEdge = cos < 0 ? (margin - centerX) / cos : Number.POSITIVE_INFINITY;
-    const distanceToBottomEdge = sin > 0 ? (height - margin - centerY) / sin : Number.POSITIVE_INFINITY;
-    const distanceToTopEdge = sin < 0 ? (margin - centerY) / sin : Number.POSITIVE_INFINITY;
+    const distanceToRightEdge =
+      cos > 0 ? (width - margin - centerX) / cos : Number.POSITIVE_INFINITY;
+    const distanceToLeftEdge =
+      cos < 0 ? (margin - centerX) / cos : Number.POSITIVE_INFINITY;
+    const distanceToBottomEdge =
+      sin > 0 ? (height - margin - centerY) / sin : Number.POSITIVE_INFINITY;
+    const distanceToTopEdge =
+      sin < 0 ? (margin - centerY) / sin : Number.POSITIVE_INFINITY;
 
     // Find the minimum positive distance (closest edge intersection)
-    const minimumDistance = Math.min(distanceToRightEdge, distanceToLeftEdge, distanceToBottomEdge, distanceToTopEdge);
+    const minimumDistance = Math.min(
+      distanceToRightEdge,
+      distanceToLeftEdge,
+      distanceToBottomEdge,
+      distanceToTopEdge,
+    );
 
     indicatorX = centerX + cos * minimumDistance;
     indicatorY = centerY + sin * minimumDistance;
@@ -730,20 +844,20 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.#ctx.save();
 
     // Draw background circle
-    this.#ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    this.#ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
     this.#ctx.beginPath();
     this.#ctx.arc(indicatorX, indicatorY, indicatorRadius + 2, 0, Math.PI * 2);
     this.#ctx.fill();
 
     // Draw indicator circle
-    const foodColor = nearestFood.type === 'golden' ? '#F59E0B' : '#EF4444';
+    const foodColor = nearestFood.type === "golden" ? "#F59E0B" : "#EF4444";
     this.#ctx.fillStyle = foodColor;
     this.#ctx.beginPath();
     this.#ctx.arc(indicatorX, indicatorY, indicatorRadius, 0, Math.PI * 2);
     this.#ctx.fill();
 
     // Draw directional arrow
-    this.#ctx.fillStyle = 'white';
+    this.#ctx.fillStyle = "white";
     this.#ctx.translate(indicatorX, indicatorY);
     this.#ctx.rotate(angle);
 
@@ -762,13 +876,13 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
     // Add subtle distance indicator for very far food
     if (nearestDistance > 20) {
-      this.#ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      this.#ctx.font = '10px Arial';
-      this.#ctx.textAlign = 'center';
+      this.#ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      this.#ctx.font = "10px Arial";
+      this.#ctx.textAlign = "center";
       this.#ctx.fillText(
         Math.floor(nearestDistance).toString(),
         indicatorX,
-        indicatorY - indicatorRadius - 8
+        indicatorY - indicatorRadius - 8,
       );
     }
 
