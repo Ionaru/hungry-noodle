@@ -13,6 +13,8 @@ An Android App game based on Snake.
 - Family-Friendly: Cute aesthetics, no violence, PEGI 3/ESRB E rating
 - Playable with one hand.
 - No keyboard controls.
+- App starts into gameplay immediately.
+- Game field is larger than the screen.
 
 ## 🏗️ Technical Architecture
 
@@ -36,7 +38,7 @@ An Android App game based on Snake.
 - Always use descriptive names.
 - Do not use decorators like `@ViewChild` or `@HostBinding`, but their signal-based equivalents.
 - Do not suffix components with "component" in both class name and file name.
-- Do not suffic services with "service" in both class name and file name.
+- Do not suffix services with "service" in both class name and file name.
 - Split up Component logic and HTML when the component reaches more than 100 lines.
 - Use the native private "#" prefix instead of the Typescript "private".
 - Never import CommonModule.

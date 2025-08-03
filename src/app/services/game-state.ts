@@ -1,8 +1,8 @@
 import { Injectable, signal, computed } from "@angular/core";
 
 export interface SnakeSegment {
-  x: number;
-  y: number;
+  x: number; // Floating point position for smooth movement
+  y: number; // Floating point position for smooth movement
 }
 
 export interface Food {
@@ -11,6 +11,13 @@ export interface Food {
   type: "normal" | "golden" | "special";
   value: number;
 }
+
+export interface Camera {
+  x: number;
+  y: number;
+}
+
+
 
 export type GameStatus = "menu" | "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
@@ -32,6 +39,22 @@ export class GameState {
   readonly canvasHeight = signal(480); // Will be updated dynamically
   readonly gridSize = signal(16); // Smaller grid for mobile
 
+  // World size - much larger than screen
+  readonly worldWidth = signal(80); // World width in grid units (80 * 16 = 1280px)
+  readonly worldHeight = signal(120); // World height in grid units (120 * 16 = 1920px)
+
+  // Camera/viewport system
+  readonly camera = signal<Camera>({ x: 0, y: 0 }); // Current camera position in grid units
+  #targetCamera: Camera = { x: 0, y: 0 }; // Target camera position for smooth following
+  #cameraSmoothingFactor = 0.01; // Adjustable smoothing (0.1 = very smooth, 0.3 = responsive)
+
+  // Smooth continuous movement
+  readonly movementSpeed = signal(4); // Grid units per second
+  #pendingDirection: Direction | null = null; // Direction to change to at next grid position
+
+  // Event signals for UI updates
+  readonly foodEatenEvent = signal<Food | null>(null); // Emits when food is eaten
+
   // Game statistics
   readonly currentLength = computed(() => this.snake().length);
   readonly highScore = computed(() => {
@@ -46,6 +69,37 @@ export class GameState {
     gridWidth: Math.floor(this.canvasWidth() / this.gridSize()),
     gridHeight: Math.floor(this.canvasHeight() / this.gridSize()),
   }));
+
+  // Computed world and viewport properties
+  readonly worldSize = computed(() => ({
+    width: this.worldWidth() * this.gridSize(),
+    height: this.worldHeight() * this.gridSize(),
+    gridWidth: this.worldWidth(),
+    gridHeight: this.worldHeight(),
+  }));
+
+  readonly viewport = computed(() => {
+    const canvasSize = this.canvasSize();
+    const camera = this.camera();
+    const worldSize = this.worldSize();
+
+    // Calculate integer grid bounds for rendering (expand by 1 to prevent flickering)
+    const left = Math.max(0, Math.floor(camera.x) - 1);
+    const top = Math.max(0, Math.floor(camera.y) - 1);
+    const right = Math.min(worldSize.gridWidth, Math.ceil(camera.x + canvasSize.gridWidth) + 1);
+    const bottom = Math.min(worldSize.gridHeight, Math.ceil(camera.y + canvasSize.gridHeight) + 1);
+
+    return {
+      // Viewport bounds in grid units (integer bounds for stable rendering)
+      left,
+      top,
+      right,
+      bottom,
+      // Viewport size
+      width: right - left,
+      height: bottom - top,
+    };
+  });
 
   // Mobile-responsive canvas sizing
   updateCanvasSize(containerWidth: number, containerHeight: number): void {
@@ -119,8 +173,9 @@ export class GameState {
       right: "left",
     };
 
-    if (opposites[current] !== newDirection) {
-      this.direction.set(newDirection);
+    if (opposites[current] !== newDirection && newDirection !== current) {
+      // Set pending direction to change at next grid position
+      this.#pendingDirection = newDirection;
     }
   }
 
@@ -128,60 +183,190 @@ export class GameState {
     this.score.update((current) => current + points);
   }
 
-  // Game mechanics
-  moveSnake(): void {
-    const snake = this.snake();
-    const direction = this.direction();
-    const head = snake[0];
+      // Continuous movement system
+  updateMovement(deltaTime: number): void {
+    if (this.gameStatus() !== "playing") return;
 
-    // Calculate new head position
-    let newHead: SnakeSegment;
-    switch (direction) {
+    // Move snake smoothly
+    this.moveSnakeContinuous(deltaTime);
+
+    // Update target camera position based on snake head
+    this.updateTargetCamera();
+
+    // Smoothly move camera towards target
+    this.updateCameraSmooth(deltaTime);
+  }
+
+    private moveSnakeContinuous(deltaTime: number): void {
+    const snake = this.snake();
+    if (snake.length === 0) return;
+
+    const currentDirection = this.direction();
+    const speed = this.movementSpeed();
+    const distance = (speed * deltaTime) / 1000; // Convert to grid units per frame
+
+    // Calculate movement delta based on current direction
+    let deltaX = 0;
+    let deltaY = 0;
+
+    switch (currentDirection) {
       case "up": {
-        newHead = { x: head.x, y: head.y - 1 };
+        deltaY = -distance;
         break;
       }
       case "down": {
-        newHead = { x: head.x, y: head.y + 1 };
+        deltaY = distance;
         break;
       }
       case "left": {
-        newHead = { x: head.x - 1, y: head.y };
+        deltaX = -distance;
         break;
       }
       case "right": {
-        newHead = { x: head.x + 1, y: head.y };
+        deltaX = distance;
         break;
       }
     }
 
-    // Add new head to front of snake
-    const newSnake = [newHead, ...snake];
+    const head = snake[0];
+    const newHeadX = head.x + deltaX;
+    const newHeadY = head.y + deltaY;
 
-    // Remove tail (will be added back if food is eaten)
-    newSnake.pop();
+    // Check boundary collision before moving
+    const { gridWidth, gridHeight } = this.worldSize();
+    if (newHeadX < 0 || newHeadX >= gridWidth || newHeadY < 0 || newHeadY >= gridHeight) {
+      this.endGame();
+      return;
+    }
+
+    // Check if head has reached a grid position and handle direction change
+    const headGridX = Math.round(newHeadX);
+    const headGridY = Math.round(newHeadY);
+
+    // If head is very close to a grid position and we have a pending direction change
+    if (this.#pendingDirection &&
+        Math.abs(newHeadX - headGridX) < 0.1 &&
+        Math.abs(newHeadY - headGridY) < 0.1) {
+
+      // Change direction at grid position
+      this.direction.set(this.#pendingDirection);
+      this.#pendingDirection = null;
+
+      // Snap head to exact grid position for clean turns
+      const newSnake = [...snake];
+      newSnake[0] = { x: headGridX, y: headGridY };
+
+      // Check for food consumption at this grid position
+      this.checkFoodConsumption(headGridX, headGridY);
+
+      // Update body segments with proper spacing
+      this.updateBodySegments(newSnake, deltaTime);
+
+      this.snake.set(newSnake);
+      return;
+    }
+
+    // Normal continuous movement
+    const newSnake = [...snake];
+    newSnake[0] = { x: newHeadX, y: newHeadY };
+
+    // Check for food consumption during continuous movement
+    this.checkFoodConsumption(newHeadX, newHeadY);
+
+    // Check self-collision
+    if (this.checkSelfCollision(newHeadX, newHeadY, newSnake)) {
+      this.endGame();
+      return;
+    }
+
+    // Update body segments with proper spacing
+    this.updateBodySegments(newSnake, deltaTime);
 
     this.snake.set(newSnake);
   }
 
-  checkCollision(): boolean {
+  // Update target camera position based on snake head
+  private updateTargetCamera(): void {
     const snake = this.snake();
+    if (snake.length === 0) return;
+
     const head = snake[0];
-    const { gridWidth, gridHeight } = this.canvasSize();
+    const canvasSize = this.canvasSize();
+    const worldSize = this.worldSize();
 
-    // Wall collision
-    if (
-      head.x < 0 ||
-      head.x >= gridWidth ||
-      head.y < 0 ||
-      head.y >= gridHeight
-    ) {
-      return true;
+    // Calculate desired camera position to center snake head
+    const centerX = head.x - canvasSize.gridWidth / 2;
+    const centerY = head.y - canvasSize.gridHeight / 2;
+
+    // Clamp camera position to world boundaries
+    const clampedX = Math.max(0, Math.min(centerX, worldSize.gridWidth - canvasSize.gridWidth));
+    const clampedY = Math.max(0, Math.min(centerY, worldSize.gridHeight - canvasSize.gridHeight));
+
+    this.#targetCamera = { x: clampedX, y: clampedY };
+  }
+
+  // Update body segments with proper spacing to prevent compression
+  private updateBodySegments(newSnake: SnakeSegment[], deltaTime: number): void {
+    const segmentDistance = 1; // Distance between segments in grid units
+    const speed = this.movementSpeed();
+    const moveDistance = (speed * deltaTime) / 1000;
+
+    // Update each body segment to follow the one in front with proper spacing
+    for (let index = 1; index < newSnake.length; index++) {
+      const current = newSnake[index];
+      const target = newSnake[index - 1];
+
+      // Calculate direction from current to target
+      const dx = target.x - current.x;
+      const dy = target.y - current.y;
+      const currentDistance = Math.hypot(dx, dy);
+
+      // Only move if we're too far from target
+      if (currentDistance > segmentDistance) {
+        // Calculate how much to move (don't overshoot)
+        const excessDistance = currentDistance - segmentDistance;
+        const actualMoveDistance = Math.min(moveDistance, excessDistance);
+
+        // Move towards target
+        const moveRatio = actualMoveDistance / currentDistance;
+        current.x += dx * moveRatio;
+        current.y += dy * moveRatio;
+      }
     }
+  }
 
-    // Self collision (check if head collides with any body segment)
-    for (let index = 1; index < snake.length; index++) {
-      if (head.x === snake[index].x && head.y === snake[index].y) {
+  // Check for food consumption with continuous positions
+  private checkFoodConsumption(headX: number, headY: number): void {
+    const food = this.food();
+    const consumptionRadius = 0.4; // Allow some tolerance for continuous movement
+
+    for (const foodItem of food) {
+      const distance = Math.hypot(headX - foodItem.x, headY - foodItem.y);
+
+      if (distance <= consumptionRadius) {
+        // Remove eaten food
+        this.food.set([]);
+
+        // Update score and grow snake
+        this.updateScore(foodItem.value);
+        this.growSnake();
+        this.spawnFood();
+        this.foodEatenEvent.set(foodItem); // Emit event for UI updates
+        return;
+      }
+    }
+  }
+
+  // Check self-collision with continuous positions
+  private checkSelfCollision(headX: number, headY: number, snake: SnakeSegment[]): boolean {
+    const collisionRadius = 0.3; // Smaller than segment spacing to prevent false positives
+
+    // Check collision with body segments (skip head at index 0)
+    for (let index = 3; index < snake.length; index++) { // Skip first 3 segments to allow turns
+      const segment = snake[index];
+      const distance = Math.hypot(headX - segment.x, headY - segment.y);
+
+      if (distance <= collisionRadius) {
         return true;
       }
     }
@@ -189,55 +374,136 @@ export class GameState {
     return false;
   }
 
-  checkFoodConsumption(): Food | null {
+    // Grow snake by adding a segment at the tail
+  private growSnake(): void {
     const snake = this.snake();
-    const head = snake[0];
-    const food = this.food();
+    if (snake.length === 0) return;
 
-    for (const foodItem of food) {
-      if (head.x === foodItem.x && head.y === foodItem.y) {
-        // Remove eaten food
-        this.food.set([]);
+    const tail = snake.at(-1);
+    const secondToLast = snake.length > 1 ? snake.at(-2) : null;
+    if (!tail) return;
 
-        // Grow snake by adding segment at the end
-        const tail = snake.at(-1);
-        const newSnake = [...snake];
-        if (tail) {
-          newSnake.push(tail);
+    // Calculate where to place the new segment (behind the tail)
+    let newX = tail.x;
+    let newY = tail.y;
+
+    if (secondToLast) {
+      // Place new segment in the direction opposite to tail movement
+      const dx = tail.x - secondToLast.x;
+      const dy = tail.y - secondToLast.y;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance > 0) {
+        // Normalize and place 1 unit behind
+        newX = tail.x - (dx / distance) * 1;
+        newY = tail.y - (dy / distance) * 1;
+      } else {
+        // Fallback: place behind based on current direction
+        const currentDirection = this.direction();
+        switch (currentDirection) {
+          case "up": {
+            newY = tail.y + 1;
+            break;
+          }
+          case "down": {
+            newY = tail.y - 1;
+            break;
+          }
+          case "left": {
+            newX = tail.x + 1;
+            break;
+          }
+          case "right": {
+            newX = tail.x - 1;
+            break;
+          }
         }
-        this.snake.set(newSnake);
-
-        return foodItem;
       }
     }
 
-    return null;
+    const newSegment = { x: newX, y: newY };
+    this.snake.set([...snake, newSegment]);
   }
+
+  // Smoothly interpolate camera towards target position
+  private updateCameraSmooth(deltaTime: number): void {
+    const currentCamera = this.camera();
+    const targetCamera = this.#targetCamera;
+
+    // Frame-rate independent interpolation using exponential smoothing
+    const frameRate = 1000 / Math.max(deltaTime, 1); // Prevent division by zero
+    const targetFrameRate = 60;
+    const adjustedSmoothing = 1 - Math.pow(1 - this.#cameraSmoothingFactor, (targetFrameRate / frameRate));
+
+    // Interpolate camera position
+    const newX = currentCamera.x + (targetCamera.x - currentCamera.x) * adjustedSmoothing;
+    const newY = currentCamera.y + (targetCamera.y - currentCamera.y) * adjustedSmoothing;
+
+    this.camera.set({ x: newX, y: newY });
+  }
+
+  // Method to adjust camera smoothness (for fine-tuning)
+  setCameraSmoothness(factor: number): void {
+    // Clamp between 0.05 (very smooth) and 0.5 (very responsive)
+    this.#cameraSmoothingFactor = Math.max(0.05, Math.min(0.5, factor));
+  }
+
+  // Legacy camera method for initial setup - immediately positions camera
+  updateCamera(): void {
+    const snake = this.snake();
+    if (snake.length === 0) return;
+
+    const head = snake[0];
+    const canvasSize = this.canvasSize();
+    const worldSize = this.worldSize();
+
+    // Calculate desired camera position to center snake head
+    const centerX = head.x - Math.floor(canvasSize.gridWidth / 2);
+    const centerY = head.y - Math.floor(canvasSize.gridHeight / 2);
+
+    // Clamp camera position to world boundaries
+    const clampedX = Math.max(0, Math.min(centerX, worldSize.gridWidth - canvasSize.gridWidth));
+    const clampedY = Math.max(0, Math.min(centerY, worldSize.gridHeight - canvasSize.gridHeight));
+
+    // For immediate positioning (initialization), set both current and target
+    this.camera.set({ x: clampedX, y: clampedY });
+    this.#targetCamera = { x: clampedX, y: clampedY };
+  }
+
+
+
+
 
   // Private initialization methods
   private initializeGame(): void {
-    const centerX = Math.floor(this.canvasSize().gridWidth / 2);
-    const centerY = Math.floor(this.canvasSize().gridHeight / 2);
+    const centerX = Math.floor(this.worldSize().gridWidth / 2);
+    const centerY = Math.floor(this.worldSize().gridHeight / 2);
 
-    // Initialize snake in center
-    this.snake.set([
+    // Initialize snake in center of world
+    const initialSnake = [
       { x: centerX, y: centerY },
       { x: centerX - 1, y: centerY },
       { x: centerX - 2, y: centerY },
-    ]);
+    ];
+
+    this.snake.set(initialSnake);
+
+    // Reset pending direction
+    this.#pendingDirection = null;
 
     this.direction.set("right");
+    this.updateCamera(); // Center camera on snake
     this.spawnFood();
   }
 
   spawnFood(): void {
-    const gridWidth = this.canvasSize().gridWidth;
-    const gridHeight = this.canvasSize().gridHeight;
+    const gridWidth = this.worldSize().gridWidth;
+    const gridHeight = this.worldSize().gridHeight;
     const snake = this.snake();
 
     let foodPosition: { x: number; y: number };
 
-    // Find empty position for food
+    // Find empty position for food in the world
     do {
       foodPosition = {
         // eslint-disable-next-line sonarjs/pseudo-random
