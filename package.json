@@ -10,7 +10,7 @@
     "check:style": "stylelint \"**/*.{css,scss}\"",
     "check:format": "prettier --check .",
     "check:lint": "ng lint",
-    "fix": "npm run fix:format && npm run fix:style && npm run fix:lint && echo ✨",
+    "fix": "pnpm fix:format && pnpm fix:style && pnpm fix:lint && echo ✨",
     "fix:style": "stylelint \"**/*.{css,scss}\" --fix",
     "fix:format": "prettier --write .",
     "fix:lint": "ng lint --fix",
@@ -25,7 +25,9 @@
     "@angular/forms": "^20.1.4",
     "@angular/platform-browser": "^20.1.4",
     "@angular/router": "^20.1.4",
-    "@ionic/angular": "^8.7.0",
+    "@awesome.me/kit-fa99832706": "^1.0.4",
+    "@fortawesome/angular-fontawesome": "^2.0.1",
+    "@ionic/angular": "^8.7.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
@@ -54,5 +56,6 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.38.0",
     "vitest": "^3.2.4"
-  }
+  },
+  "packageManager": "pnpm@10.14.0"
 }
