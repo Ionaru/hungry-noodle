@@ -50,6 +50,9 @@ export class GameState {
   readonly movementSpeed = signal(4); // Grid units per second
   #pendingDirection: Direction | null = null; // Direction to change to at next grid position
 
+  // Path tracking for proper body following
+  #headPath: SnakeSegment[] = []; // Path of positions the head has traveled
+
   // Event signals for UI updates
   readonly foodEatenEvent = signal<Food | null>(null); // Emits when food is eaten
 
@@ -149,6 +152,7 @@ export class GameState {
   resetGame(): void {
     this.score.set(0);
     this.gameTime.set(0);
+    this.#headPath = []; // Reset path tracking
     this.initializeGame();
     this.gameStatus.set("menu");
   }
@@ -253,6 +257,9 @@ export class GameState {
       const newSnake = [...snake];
       newSnake[0] = { x: headGridX, y: headGridY };
 
+      // Record this grid position in the path
+      this.recordHeadPosition(headGridX, headGridY);
+
       // Check for food consumption at this grid position
       const shouldGrow = this.checkFoodConsumption(headGridX, headGridY);
 
@@ -271,6 +278,9 @@ export class GameState {
     // Normal continuous movement
     const newSnake = [...snake];
     newSnake[0] = { x: newHeadX, y: newHeadY };
+
+    // Record head position for path tracking
+    this.recordHeadPosition(newHeadX, newHeadY);
 
     // Check for food consumption during continuous movement
     const shouldGrow = this.checkFoodConsumption(newHeadX, newHeadY);
@@ -318,39 +328,97 @@ export class GameState {
     this.#targetCamera = { x: clampedX, y: clampedY };
   }
 
-  // Update body segments with proper spacing to prevent compression
+  // Record head position in the path for body segments to follow
+  private recordHeadPosition(x: number, y: number): void {
+    // Add current head position to the front of the path
+    this.#headPath.unshift({ x, y });
+
+    // Limit path length to prevent excessive memory usage
+    // Keep enough path for the longest possible snake plus some buffer
+    const maxPathLength = this.worldWidth() * this.worldHeight() + 100;
+    if (this.#headPath.length > maxPathLength) {
+      this.#headPath.splice(maxPathLength);
+    }
+  }
+
   private updateBodySegments(
     newSnake: SnakeSegment[],
     deltaTime: number,
   ): void {
-    const segmentDistance = 1; // Distance between segments in grid units
+    if (newSnake.length < 2 || this.#headPath.length === 0) return;
+
     const speed = this.movementSpeed();
-    const moveDistance = (speed * deltaTime) / 1000;
+    const segmentSpacing = 1; // Target distance between segments (1 grid unit)
+    const moveDistance = (speed * deltaTime) / 1000; // Distance to move this frame
 
-    // Update each body segment to follow the one in front with proper spacing
-    for (let index = 1; index < newSnake.length; index++) {
-      const current = newSnake[index];
-      const target = newSnake[index - 1];
+    // Update each body segment to follow the path at the correct distance
+    for (let segmentIndex = 1; segmentIndex < newSnake.length; segmentIndex++) {
+      const currentSegment = newSnake[segmentIndex];
+      const targetDistance = segmentIndex * segmentSpacing; // Distance from head along path
 
-      // Calculate direction from current to target
-      const dx = target.x - current.x;
-      const dy = target.y - current.y;
-      const currentDistance = Math.hypot(dx, dy);
+      // Find the target position along the path at the correct distance
+      const targetPosition = this.findPositionAlongPath(targetDistance);
+      if (!targetPosition) continue; // Skip if can't find target position
 
-      // Only move if we're too far from target (with small tolerance to prevent jitter)
-      if (currentDistance > segmentDistance + 0.01) {
-        // Calculate how much to move (don't overshoot)
-        const excessDistance = currentDistance - segmentDistance;
-        const actualMoveDistance = Math.min(moveDistance, excessDistance);
+      // Calculate direction from current segment to target position
+      const deltaX = targetPosition.x - currentSegment.x;
+      const deltaY = targetPosition.y - currentSegment.y;
+      const distance = Math.hypot(deltaX, deltaY);
 
-        // Move towards target
-        if (currentDistance > 0) {
-          const moveRatio = actualMoveDistance / currentDistance;
-          current.x += dx * moveRatio;
-          current.y += dy * moveRatio;
-        }
+      // Move towards target position
+      if (distance > 0.1) {
+        // Only move if we're not very close to target
+        const actualMoveDistance = Math.min(moveDistance, distance);
+
+        // Normalize direction and apply movement
+        const normalizedX = deltaX / distance;
+        const normalizedY = deltaY / distance;
+
+        newSnake[segmentIndex] = {
+          x: currentSegment.x + normalizedX * actualMoveDistance,
+          y: currentSegment.y + normalizedY * actualMoveDistance,
+        };
       }
     }
+  }
+
+  // Find position along the recorded path at a specific distance from the head
+  private findPositionAlongPath(targetDistance: number): SnakeSegment | null {
+    if (this.#headPath.length === 0) return null;
+
+    let accumulatedDistance = 0;
+    let previousPosition = this.#headPath[0];
+
+    // Walk along the path until we reach the target distance
+    for (let index = 1; index < this.#headPath.length; index++) {
+      const currentPosition = this.#headPath[index];
+      const segmentDistance = Math.hypot(
+        currentPosition.x - previousPosition.x,
+        currentPosition.y - previousPosition.y,
+      );
+
+      if (accumulatedDistance + segmentDistance >= targetDistance) {
+        // Target distance is within this segment
+        const remainingDistance = targetDistance - accumulatedDistance;
+        const ratio = remainingDistance / segmentDistance;
+
+        // Interpolate between previous and current position
+        return {
+          x:
+            previousPosition.x +
+            (currentPosition.x - previousPosition.x) * ratio,
+          y:
+            previousPosition.y +
+            (currentPosition.y - previousPosition.y) * ratio,
+        };
+      }
+
+      accumulatedDistance += segmentDistance;
+      previousPosition = currentPosition;
+    }
+
+    // If we've run out of path, return the last position
+    return this.#headPath.at(-1) ?? null;
   }
 
   // Check for food consumption with continuous positions
@@ -490,6 +558,12 @@ export class GameState {
 
     this.snake.set(initialSnake);
 
+    // Initialize head path with the initial snake positions
+    this.#headPath = [];
+    for (let index = initialSnake.length - 1; index >= 0; index--) {
+      this.#headPath.push({ ...initialSnake[index] });
+    }
+
     // Reset pending direction
     this.#pendingDirection = null;
 
@@ -531,6 +605,7 @@ export class GameState {
 
     this.food.update((current) => [...current, food]);
 
+    // eslint-disable-next-line sonarjs/pseudo-random
     if (Math.random() < 0.1) {
       this.spawnFood();
     }
