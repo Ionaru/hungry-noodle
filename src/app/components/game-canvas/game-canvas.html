@@ -1,7 +1,7 @@
 <div class="safe-area-top safe-area-bottom flex h-screen flex-col bg-gray-900">
   <!-- Mobile Game HUD -->
   <div
-    class="flex shrink-0 items-center justify-between bg-gray-800 px-4 py-3 text-white"
+    class="fixed flex shrink-0 items-center justify-between bg-gray-800 px-4 py-3 text-white"
   >
     <!-- Game Stats - Compact Layout -->
     <div class="flex gap-4">
@@ -40,7 +40,7 @@
 
   <!-- Mobile Game Canvas Container -->
   <div
-    class="flex flex-1 flex-col items-center justify-center px-4 py-2"
+    class="flex flex-1 flex-col items-center justify-center"
     #containerElement
   >
     <div class="relative touch-none" #gestureContainer>

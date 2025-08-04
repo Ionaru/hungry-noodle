@@ -107,21 +107,8 @@ export class GameState {
 
   // Mobile-responsive canvas sizing
   updateCanvasSize(containerWidth: number, containerHeight: number): void {
-    // Leave space for HUD and controls (about 120px total)
-    const availableHeight = containerHeight - 120;
-    const availableWidth = containerWidth - 32; // 16px padding on each side
-
-    // For mobile (portrait), prioritize height and keep aspect ratio suitable for snake
-    const aspectRatio = 0.75; // 3:4 ratio works well for portrait snake game
-
-    let newWidth = availableWidth;
-    let newHeight = availableWidth / aspectRatio;
-
-    // If height exceeds available space, scale down
-    if (newHeight > availableHeight) {
-      newHeight = availableHeight;
-      newWidth = newHeight * aspectRatio;
-    }
+    let newWidth = containerWidth;
+    let newHeight = containerHeight;
 
     // Ensure minimum playable size
     const minWidth = 280;
@@ -434,13 +421,6 @@ export class GameState {
     );
   }
 
-  // Legacy grow snake method for backward compatibility
-  private growSnake(): void {
-    const snake = [...this.snake()];
-    this.growSnakeInArray(snake);
-    this.snake.set(snake);
-  }
-
   // Smoothly interpolate camera towards target position
   private updateCameraSmooth(deltaTime: number): void {
     const currentCamera = this.camera();
@@ -549,6 +529,10 @@ export class GameState {
       value: Math.random() < 0.1 ? 5 : 1,
     };
 
-    this.food.set([food]);
+    this.food.update((current) => [...current, food]);
+
+    if (Math.random() < 0.1) {
+      this.spawnFood();
+    }
   }
 }

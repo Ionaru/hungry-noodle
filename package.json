@@ -27,7 +27,7 @@
     "@angular/platform-browser": "^20.1.4",
     "@angular/router": "^20.1.4",
     "@awesome.me/kit-fa99832706": "^1.0.4",
-    "@fortawesome/angular-fontawesome": "^2.0.1",
+    "@fortawesome/angular-fontawesome": "^3.0.0",
     "@ionic/angular": "^8.7.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tauri-apps/api": "^2",
