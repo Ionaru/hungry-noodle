@@ -28,8 +28,8 @@ export class GameState {
   readonly score = signal(0);
   readonly snake = signal<SnakeSegment[]>([]);
   readonly food = signal<Food[]>([]);
-  readonly gameStatus = signal<GameStatus>("menu");
-  readonly direction = signal<Direction>("right");
+  readonly gameStatus = signal<GameStatus>("playing");
+  readonly direction = signal<Direction | null>(null);
   readonly gameTime = signal(0);
 
   // Canvas and game settings - responsive for mobile
@@ -168,7 +168,10 @@ export class GameState {
       right: "left",
     };
 
-    if (opposites[current] !== newDirection && newDirection !== current) {
+    if (
+      !current ||
+      (opposites[current] !== newDirection && newDirection !== current)
+    ) {
       // Set pending direction to change at next grid position
       this.#pendingDirection = newDirection;
     }
@@ -552,8 +555,8 @@ export class GameState {
     // Initialize snake in center of world
     const initialSnake = [
       { x: centerX, y: centerY },
-      { x: centerX - 1, y: centerY },
-      { x: centerX - 2, y: centerY },
+      { x: centerX, y: centerY },
+      { x: centerX, y: centerY },
     ];
 
     this.snake.set(initialSnake);
@@ -567,7 +570,6 @@ export class GameState {
     // Reset pending direction
     this.#pendingDirection = null;
 
-    this.direction.set("right");
     this.updateCamera(); // Center camera on snake
     this.spawnFood();
   }

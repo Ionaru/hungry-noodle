@@ -99,6 +99,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       "orientationchange",
       this.#handleOrientationChange,
     );
+
+    this.#gameState.startGame();
   }
 
   ngOnDestroy(): void {
