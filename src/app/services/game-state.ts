@@ -135,6 +135,20 @@ export class GameState {
     this.gameStatus.set("playing");
   }
 
+  // Explicit pause without toggle semantics
+  pause(): void {
+    if (this.gameStatus() === "playing") {
+      this.gameStatus.set("paused");
+    }
+  }
+
+  // Explicit resume without reinitializing
+  resume(): void {
+    if (this.gameStatus() !== "gameOver" && this.snake().length > 0) {
+      this.gameStatus.set("playing");
+    }
+  }
+
   pauseGame(): void {
     if (this.gameStatus() === "playing") {
       this.gameStatus.set("paused");

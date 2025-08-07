@@ -99,11 +99,18 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       "orientationchange",
       this.#handleOrientationChange,
     );
-
-    this.#gameState.startGame();
+    // Initialize a new game only when there is no active/paused game
+    const status = this.#gameState.gameStatus();
+    if (this.#gameState.snake().length === 0 || status === "menu") {
+      this.#gameState.startGame();
+    }
   }
 
   ngOnDestroy(): void {
+    // Pause the game when leaving the page so it can be resumed later
+    if (this.#gameState.gameStatus() === "playing") {
+      this.#gameState.pause();
+    }
     if (this.#gameLoopId) {
       cancelAnimationFrame(this.#gameLoopId);
     }
@@ -164,6 +171,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     // Enable image smoothing for better mobile performance
     context.imageSmoothingEnabled = false;
     this.startGameLoop();
+
+    // If returning while paused or game over, do not change status here
   }
 
   private startGameLoop(): void {
@@ -243,7 +252,10 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   }
 
   goBack(): void {
-    this.#gameState.resetGame();
+    // Pause instead of resetting so the game can be resumed when returning
+    if (this.#gameState.gameStatus() === "playing") {
+      this.#gameState.pause();
+    }
     void this.#router.navigate(["/menu"]);
   }
 
