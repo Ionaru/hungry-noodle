@@ -1,46 +1,6 @@
-<div class="safe-area-top safe-area-bottom flex h-screen flex-col bg-gray-900">
-  <!-- Mobile Game HUD -->
+<div class="safe-area-top safe-area-bottom h-dvh bg-gray-900">
   <div
-    class="fixed flex shrink-0 items-center justify-between bg-gray-800 px-4 py-3 text-white"
-  >
-    <!-- Game Stats - Compact Layout -->
-    <div class="flex gap-4">
-      <div class="text-center">
-        <div class="text-lg font-bold">{{ gameState.score() }}</div>
-        <div class="text-xs opacity-75">Score</div>
-      </div>
-      <div class="text-center">
-        <div class="text-lg font-bold">{{ gameState.currentLength() }}</div>
-        <div class="text-xs opacity-75">Length</div>
-      </div>
-      <div class="text-center">
-        <div class="text-lg font-bold">
-          {{ formatTime(gameState.gameTime()) }}
-        </div>
-        <div class="text-xs opacity-75">Time</div>
-      </div>
-    </div>
-
-    <!-- Mobile-Optimized Controls -->
-    <div class="flex gap-3">
-      <button
-        (click)="togglePause()"
-        class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-xl font-semibold transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95"
-      >
-        {{ gameState.gameStatus() === "paused" ? "▶️" : "⏸️" }}
-      </button>
-      <button
-        (click)="goBack()"
-        class="flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-xl transition-all duration-200 hover:scale-105 hover:bg-red-700 active:scale-95"
-      >
-        🏠
-      </button>
-    </div>
-  </div>
-
-  <!-- Mobile Game Canvas Container -->
-  <div
-    class="flex flex-1 flex-col items-center justify-center"
+    class="flex h-dvh flex-col items-center justify-center"
     #containerElement
   >
     <div class="relative touch-none" #gestureContainer>
@@ -115,18 +75,5 @@
         </div>
       }
     </div>
-
-    <!-- Mobile Swipe Instructions -->
-    @if (gameState.gameStatus() === "menu") {
-      <div class="mt-4 text-center text-white/80">
-        <p class="text-sm">Swipe to control your noodle!</p>
-        <div class="mt-2 flex justify-center gap-4 text-xs">
-          <span>⬆️ Up</span>
-          <span>⬇️ Down</span>
-          <span>⬅️ Left</span>
-          <span>➡️ Right</span>
-        </div>
-      </div>
-    }
   </div>
 </div>
