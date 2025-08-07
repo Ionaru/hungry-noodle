@@ -1,6 +1,38 @@
 import { GestureDetail } from "@ionic/angular/standalone";
 
-import { GameState } from "../services/game-state";
+import { Direction, GameState } from "../services/game-state";
+
+const determineDirection = (
+  currentDirection: Direction | null,
+  deltaX: number,
+  deltaY: number,
+): Direction | null => {
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
+
+  const threshold = 0.6;
+
+  if (currentDirection) {
+    switch (currentDirection) {
+      case "up":
+      case "down": {
+        return deltaX > 0 ? "right" : "left";
+      }
+      case "left":
+      case "right": {
+        return deltaY > 0 ? "down" : "up";
+      }
+    }
+  } else if (absDeltaY > absDeltaX * threshold) {
+    // Vertical swipe
+    return deltaY < 0 ? "up" : "down";
+  } else if (absDeltaX > absDeltaY * threshold) {
+    // Horizontal swipe
+    return deltaX < 0 ? "left" : "right";
+  }
+
+  return null;
+};
 
 export const handleSwipe = (event: GestureDetail, gameState: GameState) => {
   if (gameState.gameStatus() !== "playing") return;
@@ -15,27 +47,13 @@ export const handleSwipe = (event: GestureDetail, gameState: GameState) => {
     return; // Ignore short swipes
   }
 
-  // Determine the direction of the swipe with improved logic
-  const absDeltaX = Math.abs(deltaX);
-  const absDeltaY = Math.abs(deltaY);
+  const currentDirection = gameState.direction();
 
-  // Use a threshold to determine if it's more horizontal or vertical
-  const threshold = 0.6; // Requires 60% dominance in one direction
+  const newDirection = determineDirection(currentDirection, deltaX, deltaY);
 
-  if (absDeltaY > absDeltaX * threshold) {
-    // Vertical swipe
-    if (deltaY < 0) {
-      gameState.changeDirection("up");
-    } else {
-      gameState.changeDirection("down");
-    }
-  } else if (absDeltaX > absDeltaY * threshold) {
-    // Horizontal swipe
-    if (deltaX < 0) {
-      gameState.changeDirection("left");
-    } else {
-      gameState.changeDirection("right");
-    }
+  if (newDirection) {
+    gameState.changeDirection(newDirection);
   }
   // If neither direction is dominant enough, ignore the swipe
+  // TODO: Add metrics to track swipe direction and accuracy
 };
