@@ -23,10 +23,12 @@ import { drawSnake } from "../../drawing/snake";
 import { drawWorldDecorations } from "../../drawing/world-decorations";
 import { GameState, Direction } from "../../services/game-state";
 import { Progression } from "../../services/progression";
+import { SafeContainer } from "../containers/safe-container";
 
 @Component({
   selector: "app-game-canvas",
   templateUrl: "./game-canvas.html",
+  imports: [SafeContainer],
 })
 export class GameCanvas implements AfterViewInit, OnDestroy {
   readonly canvas =
