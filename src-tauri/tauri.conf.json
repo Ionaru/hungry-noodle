@@ -1,7 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "hungry-noodle",
-  "version": "0.1.0",
+  "productName": "Hungry Noodle - Snake",
   "identifier": "com.hungry-noodle.app",
   "build": {
     "beforeDevCommand": "npm run start",
