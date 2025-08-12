@@ -10,6 +10,13 @@ body {
   user-select: none; /* Prevent text selection */
 }
 
+/* Fix for screen drag stretching */
+html {
+  position: fixed;
+  width: 100svw;
+  height: 100svh;
+}
+
 /* Safe area support for notched devices */
 .safe-area-top {
   padding-top: env(safe-area-inset-top);

@@ -129,8 +129,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     const maxHeight = this.gameState.worldSize().height;
     const container = this.containerElement().nativeElement;
     const rect = container.getBoundingClientRect();
-    const width = Math.min(rect.width, maxWidth);
-    const height = Math.min(rect.height, maxHeight);
+    const width = Math.floor(Math.min(rect.width, maxWidth));
+    const height = Math.floor(Math.min(rect.height, maxHeight));
     this.#gameState.updateCanvasSize(width, height - 8);
   }
 
