@@ -26,6 +26,7 @@ import { drawEdgeShadows } from "../../drawing/edge-shadows";
 import { drawFood } from "../../drawing/food";
 import { drawGrid } from "../../drawing/grid";
 import { drawSnake } from "../../drawing/snake";
+import { drawTurboOverlay } from "../../drawing/turbo-overlay";
 import { drawWorldDecorations } from "../../drawing/world-decorations";
 import { GameState, Direction } from "../../services/game-state";
 import { Progression } from "../../services/progression";
@@ -320,6 +321,11 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
     // Draw edge shadows to indicate more content beyond screen
     drawEdgeShadows(context, width, height, this.#gameState);
+
+    // Subtle turbo overlay when active
+    if (this.isTurboActive()) {
+      drawTurboOverlay(context, width, height, 0.18);
+    }
   }
 
   // Game controls
@@ -371,10 +377,12 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   // Turbo press/hold handlers (gameplay effect to be implemented later)
   onTurboPressStart(): void {
     this.isTurboActive.set(true);
+    this.#gameState.activateTurbo();
   }
 
   onTurboPressEnd(): void {
     this.isTurboActive.set(false);
+    this.#gameState.deactivateTurbo();
   }
 
   onSpecialAction(): void {

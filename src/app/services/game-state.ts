@@ -20,6 +20,13 @@ export interface Camera {
 export type GameStatus = "menu" | "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
 
+interface SpeedConfig {
+  normalMultiplier: number;
+  turboMultiplier: number;
+  slowMultiplier: number;
+  postTurboSlowDurationMs: number;
+}
+
 @Injectable({
   providedIn: "root",
 })
@@ -49,6 +56,16 @@ export class GameState {
   // Smooth continuous movement
   readonly movementSpeed = signal(4); // Grid units per second
   #pendingDirection: Direction | null = null; // Direction to change to at next grid position
+
+  // Speed/turbo system
+  #turboActive = false;
+  #postTurboSlowRemainingMs = 0;
+  #speedConfig: SpeedConfig = {
+    normalMultiplier: 1,
+    turboMultiplier: 2,
+    slowMultiplier: 0.5,
+    postTurboSlowDurationMs: 400,
+  };
 
   // Path tracking for proper body following
   #headPath: SnakeSegment[] = []; // Path of positions the head has traveled
@@ -199,7 +216,15 @@ export class GameState {
   updateMovement(deltaTime: number): void {
     if (this.gameStatus() !== "playing") return;
 
-    // Move snake smoothly
+    // Update transient speed state (post-turbo slow window)
+    if (!this.#turboActive && this.#postTurboSlowRemainingMs > 0) {
+      this.#postTurboSlowRemainingMs = Math.max(
+        0,
+        this.#postTurboSlowRemainingMs - deltaTime,
+      );
+    }
+
+    // Move snake smoothly (speed adjusted internally)
     this.moveSnakeContinuous(deltaTime);
 
     // Update target camera position based on snake head
@@ -214,7 +239,14 @@ export class GameState {
     if (snake.length === 0) return;
 
     const currentDirection = this.direction();
-    const speed = this.movementSpeed();
+    const baseSpeed = this.movementSpeed();
+    let speedMultiplier = this.#speedConfig.normalMultiplier;
+    if (this.#turboActive) {
+      speedMultiplier = this.#speedConfig.turboMultiplier;
+    } else if (this.#postTurboSlowRemainingMs > 0) {
+      speedMultiplier = this.#speedConfig.slowMultiplier;
+    }
+    const speed = baseSpeed * speedMultiplier;
     const distance = (speed * deltaTime) / 1000; // Convert to grid units per frame
 
     // Calculate movement delta based on current direction
@@ -319,6 +351,28 @@ export class GameState {
     this.snake.set(newSnake);
   }
 
+  // Public controls for turbo
+  activateTurbo(): void {
+    this.#turboActive = true;
+    this.#postTurboSlowRemainingMs = 0; // cancel any pending slow
+  }
+
+  deactivateTurbo(): void {
+    // Enter brief slow window to aid turning
+    this.#turboActive = false;
+    this.#postTurboSlowRemainingMs = this.#speedConfig.postTurboSlowDurationMs;
+  }
+
+  // Optional configuration of multipliers/durations
+  configureMovementSpeeds(config: Partial<{
+    normalMultiplier: number;
+    turboMultiplier: number;
+    slowMultiplier: number;
+    postTurboSlowDurationMs: number;
+  }>): void {
+    this.#speedConfig = { ...this.#speedConfig, ...config };
+  }
+
   // Update target camera position based on snake head
   private updateTargetCamera(): void {
     const snake = this.snake();
@@ -360,42 +414,22 @@ export class GameState {
 
   private updateBodySegments(
     newSnake: SnakeSegment[],
-    deltaTime: number,
+    _deltaTime: number,
   ): void {
     if (newSnake.length < 2 || this.#headPath.length === 0) return;
 
-    const speed = this.movementSpeed();
     const segmentSpacing = 1; // Target distance between segments (1 grid unit)
-    const moveDistance = (speed * deltaTime) / 1000; // Distance to move this frame
 
     // Update each body segment to follow the path at the correct distance
     for (let segmentIndex = 1; segmentIndex < newSnake.length; segmentIndex++) {
-      const currentSegment = newSnake[segmentIndex];
       const targetDistance = segmentIndex * segmentSpacing; // Distance from head along path
 
       // Find the target position along the path at the correct distance
       const targetPosition = this.findPositionAlongPath(targetDistance);
       if (!targetPosition) continue; // Skip if can't find target position
 
-      // Calculate direction from current segment to target position
-      const deltaX = targetPosition.x - currentSegment.x;
-      const deltaY = targetPosition.y - currentSegment.y;
-      const distance = Math.hypot(deltaX, deltaY);
-
-      // Move towards target position
-      if (distance > 0.1) {
-        // Only move if we're not very close to target
-        const actualMoveDistance = Math.min(moveDistance, distance);
-
-        // Normalize direction and apply movement
-        const normalizedX = deltaX / distance;
-        const normalizedY = deltaY / distance;
-
-        newSnake[segmentIndex] = {
-          x: currentSegment.x + normalizedX * actualMoveDistance,
-          y: currentSegment.y + normalizedY * actualMoveDistance,
-        };
-      }
+      // Snap the segment exactly to the computed point along the path
+      newSnake[segmentIndex] = { x: targetPosition.x, y: targetPosition.y };
     }
   }
 
