@@ -12,6 +12,50 @@
       >
       </canvas>
 
+      <!-- Floating circular control buttons -->
+      <div
+        class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between px-4 pb-4 select-none"
+        aria-hidden="false"
+      >
+        <!-- Pause Button -->
+        <button
+          type="button"
+          class="pointer-events-auto h-14 w-14 rounded-full bg-black/70 text-white shadow-lg backdrop-blur transition-opacity duration-50"
+          [style.opacity]="pauseOpacity()"
+          (click)="togglePause(); $event.stopPropagation()"
+          aria-label="Pause"
+        >
+          <fa-icon [icon]="iconPause" class="text-xl"></fa-icon>
+        </button>
+
+        <!-- Turbo Button (hold to activate) -->
+        <button
+          type="button"
+          class="pointer-events-auto h-14 w-14 rounded-full bg-black/70 text-yellow-300 shadow-lg backdrop-blur transition-opacity duration-50"
+          [style.opacity]="turboOpacity()"
+          (pointerdown)="onTurboPressStart(); $event.stopPropagation()"
+          (pointerup)="onTurboPressEnd(); $event.stopPropagation()"
+          (pointercancel)="onTurboPressEnd(); $event.stopPropagation()"
+          (pointerleave)="onTurboPressEnd(); $event.stopPropagation()"
+          [class.opacity-90]="isTurboActive()"
+          [class.scale-105]="isTurboActive()"
+          aria-label="Turbo"
+        >
+          <fa-icon [icon]="iconBolt" class="text-xl"></fa-icon>
+        </button>
+
+        <!-- Special Action Button -->
+        <button
+          type="button"
+          class="pointer-events-auto h-14 w-14 rounded-full bg-black/70 text-indigo-300 shadow-lg backdrop-blur transition-opacity duration-50"
+          [style.opacity]="specialOpacity()"
+          (click)="onSpecialAction(); $event.stopPropagation()"
+          aria-label="Special Action"
+        >
+          <fa-icon [icon]="iconStar" class="text-xl"></fa-icon>
+        </button>
+      </div>
+
       <!-- Mobile Game Status Overlay -->
       @if (gameState.gameStatus() !== "playing") {
         <div

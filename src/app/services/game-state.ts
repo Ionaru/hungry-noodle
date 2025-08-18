@@ -44,7 +44,7 @@ export class GameState {
   // Camera/viewport system
   readonly camera = signal<Camera>({ x: 0, y: 0 }); // Current camera position in grid units
   #targetCamera: Camera = { x: 0, y: 0 }; // Target camera position for smooth following
-  #cameraSmoothingFactor = 0.01; // Adjustable smoothing (0.1 = very smooth, 0.3 = responsive)
+  #cameraSmoothingFactor = 0.05; // Adjustable smoothing (0.1 = very smooth, 0.3 = responsive)
 
   // Smooth continuous movement
   readonly movementSpeed = signal(4); // Grid units per second

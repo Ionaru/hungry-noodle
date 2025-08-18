@@ -10,6 +10,12 @@ import {
   computed,
 } from "@angular/core";
 import { Router } from "@angular/router";
+import {
+  faPause,
+  faBolt,
+  faStar,
+} from "@awesome.me/kit-fa99832706/icons/slab/regular";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 import { Gesture, GestureController } from "@ionic/angular/standalone";
 
 import { handleKeyboard } from "../../controls/keyboard";
@@ -28,7 +34,7 @@ import { SafeContainer } from "../containers/safe-container";
 @Component({
   selector: "app-game-canvas",
   templateUrl: "./game-canvas.html",
-  imports: [SafeContainer],
+  imports: [SafeContainer, FaIconComponent],
 })
 export class GameCanvas implements AfterViewInit, OnDestroy {
   readonly canvas =
@@ -61,6 +67,68 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   #lastUpdateTime = 0;
 
   readonly coinsEarned = signal(0);
+
+  // UI state
+  readonly isTurboActive = signal(false);
+
+  readonly iconPause = faPause;
+  readonly iconBolt = faBolt;
+  readonly iconStar = faStar;
+
+  // Button layout (pixels)
+  readonly #buttonSizePx = 56;
+  readonly #buttonMarginPx = 16;
+
+  // Snake head position in screen/canvas pixels
+  readonly headScreenPosition = computed(() => {
+    const snake = this.#gameState.snake();
+    if (snake.length === 0) return { x: -9999, y: -9999 };
+    const head = snake[0];
+    const gridSize = this.#gameState.gridSize();
+    const camera = this.#gameState.camera();
+    return {
+      x: (head.x - camera.x) * gridSize,
+      y: (head.y - camera.y) * gridSize,
+    };
+  });
+
+  // Button centers in canvas pixels
+  readonly pauseButtonCenter = computed(() => {
+    const y =
+      this.#gameState.canvasHeight() -
+      (this.#buttonMarginPx + this.#buttonSizePx / 2);
+    const x = this.#buttonMarginPx + this.#buttonSizePx / 2;
+    return { x, y };
+  });
+
+  readonly turboButtonCenter = computed(() => {
+    const y =
+      this.#gameState.canvasHeight() -
+      (this.#buttonMarginPx + this.#buttonSizePx / 2);
+    const x = this.#gameState.canvasWidth() / 2;
+    return { x, y };
+  });
+
+  readonly specialButtonCenter = computed(() => {
+    const y =
+      this.#gameState.canvasHeight() -
+      (this.#buttonMarginPx + this.#buttonSizePx / 2);
+    const x =
+      this.#gameState.canvasWidth() -
+      (this.#buttonMarginPx + this.#buttonSizePx / 2);
+    return { x, y };
+  });
+
+  // Opacity based on snake head proximity (smoothly fades to 0.4 when close)
+  readonly pauseOpacity = computed(() =>
+    this.#opacityForCenter(this.pauseButtonCenter()),
+  );
+  readonly turboOpacity = computed(() =>
+    this.#opacityForCenter(this.turboButtonCenter()),
+  );
+  readonly specialOpacity = computed(() =>
+    this.#opacityForCenter(this.specialButtonCenter()),
+  );
 
   constructor() {
     // Watch for food eaten events to update coin counter
@@ -283,5 +351,29 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       playTime:
         this.#progression.playerStats().playTime + this.#gameState.gameTime(),
     });
+  }
+
+  // Turbo press/hold handlers (gameplay effect to be implemented later)
+  onTurboPressStart(): void {
+    this.isTurboActive.set(true);
+  }
+
+  onTurboPressEnd(): void {
+    this.isTurboActive.set(false);
+  }
+
+  onSpecialAction(): void {
+    // Placeholder for future special action
+  }
+
+  // Compute opacity for a given button center in canvas pixels
+  #opacityForCenter(center: { x: number; y: number }): number {
+    const head = this.headScreenPosition();
+    const distance = Math.hypot(head.x - center.x, head.y - center.y);
+    const fadeStart = this.#buttonSizePx * 2.5; // start fading when within ~2.5 button radii
+    const minOpacity = 0.2;
+    if (distance >= fadeStart) return 1;
+    const t = Math.max(0, distance / fadeStart);
+    return minOpacity + (1 - minOpacity) * t;
   }
 }
