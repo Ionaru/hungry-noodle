@@ -65,6 +65,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   #gesture?: Gesture;
   #gameLoopId?: number;
   #lastUpdateTime = 0;
+  #accumulatorMs = 0;
+  readonly #fixedDeltaMs = 1000 / 60; // 60 FPS simulation step
 
   readonly coinsEarned = signal(0);
 
@@ -247,18 +249,31 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
   private startGameLoop(): void {
     const gameLoop = (currentTime: number) => {
-      const deltaTime = currentTime - this.#lastUpdateTime;
-
-      // Update continuous movement every frame
-      if (this.#gameState.gameStatus() === "playing") {
-        this.#gameState.updateMovement(deltaTime);
+      if (this.#lastUpdateTime === 0) {
+        this.#lastUpdateTime = currentTime;
       }
 
-      // Update game time
-      if (deltaTime >= 16) {
-        // ~60fps
-        this.updateGameTime(deltaTime);
-        this.#lastUpdateTime = currentTime;
+      let frameTime = currentTime - this.#lastUpdateTime;
+      // Avoid spiral of death after tab restore/background
+      if (frameTime > 250) frameTime = 250;
+      this.#lastUpdateTime = currentTime;
+
+      // If not playing, don't accumulate simulation time to prevent catch-up
+      if (this.#gameState.gameStatus() === "playing") {
+        this.#accumulatorMs += frameTime;
+      } else {
+        this.#accumulatorMs = 0;
+      }
+
+      while (this.#accumulatorMs >= this.#fixedDeltaMs) {
+        if (this.#gameState.gameStatus() === "playing") {
+          this.#gameState.updateMovement(this.#fixedDeltaMs);
+          // Advance game clock in fixed steps
+          this.#gameState.gameTime.update(
+            (time) => time + this.#fixedDeltaMs / 1000,
+          );
+        }
+        this.#accumulatorMs -= this.#fixedDeltaMs;
       }
 
       // Render every frame for smooth visuals
