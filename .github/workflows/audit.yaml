@@ -19,5 +19,5 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: lts/*
-          cache: 'pnpm'
+          package-manager-cache: false
       - run: pnpm audit --prod
