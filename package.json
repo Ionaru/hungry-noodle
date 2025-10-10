@@ -10,7 +10,7 @@
     "check:style": "stylelint \"**/*.{css,scss}\"",
     "check:format": "prettier --check .",
     "check:lint": "ng lint",
-    "fix": "pnpm fix:format && pnpm fix:style && pnpm fix:lint && echo ✨",
+    "fix": "corepack pnpm fix:format && corepack pnpm fix:style && corepack pnpm fix:lint && echo ✨",
     "fix:style": "stylelint \"**/*.{css,scss}\" --fix",
     "fix:format": "prettier --write .",
     "fix:lint": "ng lint --fix",

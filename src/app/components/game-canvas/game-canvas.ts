@@ -30,6 +30,7 @@ import { drawTurboOverlay } from "../../drawing/turbo-overlay";
 import { drawWorldDecorations } from "../../drawing/world-decorations";
 import { GameState, Direction } from "../../services/game-state";
 import { Progression } from "../../services/progression";
+import { Store } from "../../services/store";
 import { SafeContainer } from "../containers/safe-container";
 
 @Component({
@@ -49,6 +50,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   readonly #progression = inject(Progression);
   readonly #router = inject(Router);
   readonly #gestureController = inject(GestureController);
+  readonly #store = inject(Store);
 
   readonly canvasElement = computed<HTMLCanvasElement>(
     () => this.canvas().nativeElement,
@@ -67,7 +69,10 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
   #gameLoopId?: number;
   #lastUpdateTime = 0;
   #accumulatorMs = 0;
+  #autoSaveIntervalId?: number;
+  #lastAutoSaveTime = 0;
   readonly #fixedDeltaMs = 1000 / 60; // 60 FPS simulation step
+  readonly #autoSaveIntervalMs = 5000; // Auto-save every 5 seconds
 
   readonly coinsEarned = signal(0);
 
@@ -165,6 +170,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     this.setupResponsiveCanvas();
     this.initializeCanvas();
     this.setupGestures();
+    this.setupAutoSave();
 
     // Listen for window resize events
     globalThis.addEventListener("resize", this.#handleResize);
@@ -183,9 +189,14 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     // Pause the game when leaving the page so it can be resumed later
     if (this.#gameState.gameStatus() === "playing") {
       this.#gameState.pause();
+      // Auto-save on route leave
+      this.#autoSave();
     }
     if (this.#gameLoopId) {
       cancelAnimationFrame(this.#gameLoopId);
+    }
+    if (this.#autoSaveIntervalId) {
+      clearInterval(this.#autoSaveIntervalId);
     }
     this.#gesture?.destroy();
     document.removeEventListener("keydown", this.#handleKeyboard);
@@ -231,6 +242,38 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
     // Add keyboard support for development/testing
     document.addEventListener("keydown", this.#handleKeyboard);
+  }
+
+  private setupAutoSave(): void {
+    // Set up interval auto-save while playing
+    this.#autoSaveIntervalId = setInterval(() => {
+      if (this.#gameState.gameStatus() === "playing") {
+        this.#autoSave();
+      }
+    }, this.#autoSaveIntervalMs);
+
+    // Save on visibility change (tab switch, minimize)
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && this.#gameState.gameStatus() === "playing") {
+        this.#autoSave();
+      }
+    });
+
+    // Save before page unload (refresh, close, etc.)
+    globalThis.addEventListener("beforeunload", () => {
+      if (this.#gameState.gameStatus() === "playing") {
+        this.#autoSave();
+      }
+    });
+  }
+
+  #autoSave(): void {
+    // Debounce saves to avoid excessive writes within the same frame
+    const now = Date.now();
+    if (now - this.#lastAutoSaveTime < 1000) return; // Don't save more than once per second
+
+    this.#lastAutoSaveTime = now;
+    this.#store.writeSavedGame(this.#gameState.toSavedGame());
   }
 
   private initializeCanvas(): void {
@@ -330,6 +373,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
   // Game controls
   startGame(): void {
+    // Clear any existing saved game before starting a new one
+    this.#store.clearSavedGame();
     this.#gameState.score.set(0);
     this.#gameState.startGame();
     this.coinsEarned.set(0);
@@ -370,6 +415,13 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
   onSpecialAction(): void {
     // Placeholder for future special action
+  }
+
+  onSaveAndExit(): void {
+    // Save the current game state
+    this.#store.writeSavedGame(this.#gameState.toSavedGame());
+    // Navigate back to menu
+    void this.#router.navigate(["/menu"]);
   }
 
   // Compute opacity for a given button center in canvas pixels

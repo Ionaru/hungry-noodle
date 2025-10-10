@@ -1,4 +1,11 @@
-import { Injectable, signal, computed, resource, inject, effect } from "@angular/core";
+import {
+  Injectable,
+  signal,
+  computed,
+  resource,
+  inject,
+  effect,
+} from "@angular/core";
 
 import { StoreKey } from "./storage/data";
 import { Store } from "./store";
@@ -28,7 +35,6 @@ export interface UnlockedContent {
   providedIn: "root",
 })
 export class Progression {
-
   readonly #store = inject(Store);
 
   // Currency signals

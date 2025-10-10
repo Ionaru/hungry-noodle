@@ -7,6 +7,20 @@ export enum StoreKey {
   PlayTime = "playTime",
   NoodleCoins = "noodleCoins",
   GoldenNoodles = "goldenNoodles",
+  SavedGame = "savedGame",
+}
+
+export interface SavedGame {
+  version: number;
+  score: number;
+  snake: { x: number; y: number }[];
+  food: { x: number; y: number; value: number }[];
+  direction: "up" | "down" | "left" | "right" | null;
+  gameTime: number;
+  gridSize: number;
+  worldWidth: number;
+  worldHeight: number;
+  camera: { x: number; y: number };
 }
 
 export interface HungryStore {
@@ -18,4 +32,5 @@ export interface HungryStore {
   [StoreKey.PlayTime]?: number;
   [StoreKey.NoodleCoins]?: number;
   [StoreKey.GoldenNoodles]?: number;
+  [StoreKey.SavedGame]?: SavedGame | null;
 }

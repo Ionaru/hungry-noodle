@@ -1,6 +1,8 @@
 import { Injectable, signal, computed, inject } from "@angular/core";
 
 import { Progression } from "./progression";
+import { SavedGame } from "./storage/data";
+import { Store } from "./store";
 
 export interface SnakeSegment {
   x: number; // Floating point position for smooth movement
@@ -33,8 +35,8 @@ interface SpeedConfig {
   providedIn: "root",
 })
 export class GameState {
-
   readonly progression = inject(Progression);
+  readonly store = inject(Store);
 
   // Core game state signals
   readonly score = signal(0);
@@ -185,6 +187,8 @@ export class GameState {
       currentScore: this.score(),
       playTime: this.gameTime(),
     });
+    // Clear saved game when game ends - no continues after game over
+    this.store.clearSavedGame();
   }
 
   resetGame(): void {
@@ -371,12 +375,14 @@ export class GameState {
   }
 
   // Optional configuration of multipliers/durations
-  configureMovementSpeeds(config: Partial<{
-    normalMultiplier: number;
-    turboMultiplier: number;
-    slowMultiplier: number;
-    postTurboSlowDurationMs: number;
-  }>): void {
+  configureMovementSpeeds(
+    config: Partial<{
+      normalMultiplier: number;
+      turboMultiplier: number;
+      slowMultiplier: number;
+      postTurboSlowDurationMs: number;
+    }>,
+  ): void {
     this.#speedConfig = { ...this.#speedConfig, ...config };
   }
 
@@ -654,7 +660,7 @@ export class GameState {
     // Use cryptographically secure random for golden food chance
     const randomArray = new Uint32Array(1);
     crypto.getRandomValues(randomArray);
-    const isGolden = (randomArray[0] / 0xff_ff_ff_ff) < 0.1;
+    const isGolden = randomArray[0] / 0xff_ff_ff_ff < 0.1;
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
@@ -667,6 +673,61 @@ export class GameState {
     // eslint-disable-next-line sonarjs/pseudo-random
     if (Math.random() < 0.1) {
       this.spawnFood();
+    }
+  }
+
+  // Save/Load functionality
+  toSavedGame(): SavedGame {
+    return {
+      version: 1 as number,
+      score: this.score(),
+      snake: this.snake(),
+      food: this.food(),
+      direction: this.direction(),
+      gameTime: this.gameTime(),
+      gridSize: this.gridSize(),
+      worldWidth: this.worldWidth(),
+      worldHeight: this.worldHeight(),
+      camera: this.camera(),
+    };
+  }
+
+  loadFromSavedGame(savedGame: SavedGame): void {
+    if (savedGame.version !== 1) {
+      throw new Error(
+        `Unsupported save version: ${savedGame.version.toString()}`,
+      );
+    }
+
+    // Load all the basic state
+    this.score.set(savedGame.score);
+    this.snake.set([...savedGame.snake]);
+    // Convert saved food format to full Food objects
+    this.food.set(
+      savedGame.food.map((f) => ({
+        x: f.x,
+        y: f.y,
+        value: f.value,
+        type: f.value > 1 ? "golden" : ("normal" as const),
+      })),
+    );
+    this.direction.set(savedGame.direction);
+    this.gameTime.set(savedGame.gameTime);
+    this.gridSize.set(savedGame.gridSize);
+    this.worldWidth.set(savedGame.worldWidth);
+    this.worldHeight.set(savedGame.worldHeight);
+    this.camera.set({ ...savedGame.camera });
+
+    // Reset internal state that can't be safely serialized
+    this.#pendingDirection = null;
+    this.#turboActive = false;
+    this.#postTurboSlowRemainingMs = 0;
+    this.#headPath = [];
+    this.#targetCamera = { ...savedGame.camera };
+
+    // Re-seed the head path for smooth movement
+    if (savedGame.snake.length > 0) {
+      this.recordHeadPosition(savedGame.snake[0].x, savedGame.snake[0].y);
     }
   }
 }

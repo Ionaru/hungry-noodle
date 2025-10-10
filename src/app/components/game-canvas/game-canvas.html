@@ -76,12 +76,20 @@
               }
               @case ("paused") {
                 <h2 class="mb-6 text-3xl font-bold">⏸️ Game Paused</h2>
-                <button
-                  (click)="togglePause()"
-                  class="w-full rounded-xl bg-blue-600 py-4 text-lg font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95"
-                >
-                  Resume Game
-                </button>
+                <div class="space-y-3">
+                  <button
+                    (click)="togglePause()"
+                    class="w-full rounded-xl bg-blue-600 py-4 text-lg font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-blue-700 active:scale-95"
+                  >
+                    Resume Game
+                  </button>
+                  <button
+                    (click)="onSaveAndExit()"
+                    class="w-full rounded-xl bg-gray-600 py-3 text-base font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-gray-700 active:scale-95"
+                  >
+                    Save & Exit
+                  </button>
+                </div>
               }
               @case ("gameOver") {
                 <h2 class="mb-4 text-3xl font-bold">🎮 Game Over!</h2>

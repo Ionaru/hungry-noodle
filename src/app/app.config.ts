@@ -23,7 +23,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     {
       provide: PERSISTANT_STORAGE,
-      useClass: '__TAURI_INTERNALS__' in globalThis ? TauriPersistantStorage : WebPersistantStorage,
+      useClass:
+        "__TAURI_INTERNALS__" in globalThis
+          ? TauriPersistantStorage
+          : WebPersistantStorage,
     },
   ],
 };

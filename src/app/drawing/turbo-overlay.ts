@@ -15,8 +15,11 @@ export const drawTurboOverlay = (
     height / 2,
     Math.max(width, height) * 0.7,
   );
-  gradient.addColorStop(0, `rgba(255, 255, 255, ${tintStrength * 0.15})`);
-  gradient.addColorStop(1, `rgba(255, 215, 0, ${tintStrength})`); // golden tint
+  gradient.addColorStop(
+    0,
+    `rgba(255, 255, 255, ${(tintStrength * 0.15).toString()})`,
+  );
+  gradient.addColorStop(1, `rgba(255, 215, 0, ${tintStrength.toString()})`); // golden tint
   context.fillStyle = gradient;
   context.fillRect(0, 0, width, height);
 
