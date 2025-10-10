@@ -24,7 +24,6 @@ import { drawBackgroundPattern } from "../../drawing/background";
 import { drawFoodDirectionIndicator } from "../../drawing/direction-indicator";
 import { drawEdgeShadows } from "../../drawing/edge-shadows";
 import { drawFood } from "../../drawing/food";
-import { drawGrid } from "../../drawing/grid";
 import { drawSnake } from "../../drawing/snake";
 import { drawTurboOverlay } from "../../drawing/turbo-overlay";
 import { drawWorldDecorations } from "../../drawing/world-decorations";
@@ -342,15 +341,9 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
     const canvas = this.canvasElement();
     const { width, height } = canvas;
-    const gridSize = this.#gameState.gridSize();
 
     // Draw background with patterns for visual movement feedback
     drawBackgroundPattern(context, width, height, this.#gameState);
-
-    // Only draw grid on larger screens to improve mobile performance
-    if (width > 400) {
-      drawGrid(context, width, height, gridSize);
-    }
 
     // Draw world decorations for visual interest
     drawWorldDecorations(context, width, height, this.#gameState);
