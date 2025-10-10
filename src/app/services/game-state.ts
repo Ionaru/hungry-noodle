@@ -148,7 +148,7 @@ export class GameState {
     newWidth = Math.floor(newWidth / gridSize) * gridSize;
     newHeight = Math.floor(newHeight / gridSize) * gridSize;
 
-    this.canvasWidth.set(newWidth);
+    this.canvasWidth.set(newWidth - 8); // Account for the border
     this.canvasHeight.set(newHeight);
   }
 
