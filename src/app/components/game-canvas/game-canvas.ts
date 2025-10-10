@@ -330,6 +330,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
   // Game controls
   startGame(): void {
+    this.#gameState.score.set(0);
     this.#gameState.startGame();
     this.coinsEarned.set(0);
   }
@@ -354,24 +355,6 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString()}:${secs.toString().padStart(2, "0")}`;
-  }
-
-  private handleGameOver(): void {
-    // Update progression stats
-    this.#progression.updateStats({
-      gamesPlayed: this.#progression.playerStats().gamesPlayed + 1,
-      totalScore:
-        this.#progression.playerStats().totalScore + this.#gameState.score(),
-      highScore: Math.max(
-        this.#progression.playerStats().highScore,
-        this.#gameState.score(),
-      ),
-      totalLength:
-        this.#progression.playerStats().totalLength +
-        this.#gameState.currentLength(),
-      playTime:
-        this.#progression.playerStats().playTime + this.#gameState.gameTime(),
-    });
   }
 
   // Turbo press/hold handlers (gameplay effect to be implemented later)

@@ -1,4 +1,13 @@
-import { Injectable, signal, computed, resource } from "@angular/core";
+import { Injectable, signal, computed, resource, inject, effect } from "@angular/core";
+
+import { StoreKey } from "./storage/data";
+import { Store } from "./store";
+
+export interface UpdatePlayerStats {
+  currentScore: number;
+  playTime: number;
+  currentLength: number;
+}
 
 export interface PlayerStats {
   gamesPlayed: number;
@@ -19,6 +28,9 @@ export interface UnlockedContent {
   providedIn: "root",
 })
 export class Progression {
+
+  readonly #store = inject(Store);
+
   // Currency signals
   readonly noodleCoins = signal(0);
   readonly goldenNoodles = signal(0);
@@ -62,7 +74,7 @@ export class Progression {
 
   // Currency management
   earnNoodleCoins(amount: number): void {
-    this.noodleCoins.update((current) => current + amount);
+    this.#store.write(StoreKey.NoodleCoins, this.noodleCoins() + amount);
 
     // Analytics tracking would go here
     this.trackCoinEarned(amount);
@@ -94,16 +106,22 @@ export class Progression {
   }
 
   // Progression management
-  updateStats(gameStats: Partial<PlayerStats>): void {
+  updateStats(update: UpdatePlayerStats): void {
     this.playerStats.update((current) => ({
       ...current,
-      ...gameStats,
       gamesPlayed: current.gamesPlayed + 1,
-      totalScore: current.totalScore + (gameStats.totalScore ?? 0),
-      highScore: Math.max(current.highScore, gameStats.highScore ?? 0),
-      totalLength: current.totalLength + (gameStats.totalLength ?? 0),
-      playTime: current.playTime + (gameStats.playTime ?? 0),
+      highScore: Math.max(current.highScore, update.currentScore),
+      playTime: current.playTime + update.playTime,
+      totalLength: current.totalLength + update.currentLength,
+      totalScore: current.totalScore + update.currentScore,
     }));
+
+    this.#store.write(StoreKey.HighScore, this.playerStats().highScore);
+    this.#store.write(StoreKey.GamesPlayed, this.playerStats().gamesPlayed);
+    this.#store.write(StoreKey.TotalScore, this.playerStats().totalScore);
+    this.#store.write(StoreKey.TotalLength, this.playerStats().totalLength);
+    this.#store.write(StoreKey.PerfectGames, this.playerStats().perfectGames);
+    this.#store.write(StoreKey.PlayTime, this.playerStats().playTime);
   }
 
   unlockMap(mapId: string): void {
@@ -176,19 +194,22 @@ export class Progression {
     console.log("Golden noodles spent:", amount);
   }
 
-  // Initialization
-  loadPlayerData(): void {
-    // TODO: Load from IndexedDB/localStorage
-    this.noodleCoins.set(47); // Demo data
-    this.goldenNoodles.set(5); // Demo data
+  constructor() {
+    effect(() => {
+      this.playerStats.update((current) => ({
+        ...current,
+        gamesPlayed: this.#store.gamesPlayed() ?? 0,
+        totalScore: this.#store.totalScore() ?? 0,
+        highScore: this.#store.highScore() ?? 0,
+        totalLength: this.#store.totalLength() ?? 0,
+        perfectGames: this.#store.perfectGames() ?? 0,
+        playTime: this.#store.playTime() ?? 0,
+      }));
+    });
 
-    this.playerStats.set({
-      gamesPlayed: 23,
-      totalScore: 15_420,
-      highScore: 1250,
-      totalLength: 847,
-      perfectGames: 3,
-      playTime: 3600, // 1 hour
+    effect(() => {
+      this.noodleCoins.set(this.#store.noodleCoins() ?? 0);
+      this.goldenNoodles.set(this.#store.goldenNoodles() ?? 0);
     });
   }
 }

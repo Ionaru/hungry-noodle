@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed } from "@angular/core";
+import { Component, signal, inject, computed } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   faCartShopping,
@@ -52,11 +52,8 @@ interface MenuOption {
               <div class="text-sm opacity-75">High Score</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold">{{ noodleCoins() }}</div>
-              <div class="text-sm opacity-75">
-                <fa-icon style="color: #ffd700" [icon]="faCoins" />
-                Coins
-              </div>
+              <div class="text-2xl font-bold">{{ totalScore() }}</div>
+              <div class="text-sm opacity-75">Total Score</div>
             </div>
           </div>
         </div>
@@ -87,14 +84,14 @@ interface MenuOption {
   `,
   imports: [FaIconComponent],
 })
-export class MainMenu implements OnInit {
+export class MainMenu {
   private readonly router = inject(Router);
   private readonly progression = inject(Progression);
 
   // Game state signals
   readonly highScore = computed(() => this.progression.playerStats().highScore);
-  readonly noodleCoins = this.progression.noodleCoins;
-  readonly version = "0.1.0";
+  readonly totalScore = computed(() => this.progression.playerStats().totalScore);
+  readonly version = "0.3.3";
 
   // Menu configuration
   menuOptions = signal<MenuOption[]>([
@@ -109,18 +106,21 @@ export class MainMenu implements OnInit {
       label: "Progress",
       icon: faSignalBars,
       route: "/progression",
+      disabled: true
     },
     {
       id: "shop",
       label: "Shop",
       icon: faCartShopping,
       route: "/shop",
+      disabled: true
     },
     {
       id: "challenges",
       label: "Daily Challenges",
       icon: faStar,
       route: "/challenges",
+      disabled: true
     },
     {
       id: "farm",
@@ -134,6 +134,7 @@ export class MainMenu implements OnInit {
       label: "Settings",
       icon: faSliders,
       route: "/settings",
+      disabled: true
     },
   ]);
 
@@ -145,10 +146,6 @@ export class MainMenu implements OnInit {
     } else if (option.action) {
       option.action();
     }
-  }
-
-  ngOnInit(): void {
-    this.progression.loadPlayerData();
   }
 
   protected readonly faCoins = faCircle;

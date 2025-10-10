@@ -1,4 +1,6 @@
-import { Injectable, signal, computed } from "@angular/core";
+import { Injectable, signal, computed, inject } from "@angular/core";
+
+import { Progression } from "./progression";
 
 export interface SnakeSegment {
   x: number; // Floating point position for smooth movement
@@ -31,6 +33,9 @@ interface SpeedConfig {
   providedIn: "root",
 })
 export class GameState {
+
+  readonly progression = inject(Progression);
+
   // Core game state signals
   readonly score = signal(0);
   readonly snake = signal<SnakeSegment[]>([]);
@@ -76,8 +81,7 @@ export class GameState {
   // Game statistics
   readonly currentLength = computed(() => this.snake().length);
   readonly highScore = computed(() => {
-    // TODO: Load from persistent storage
-    return Math.max(this.score(), 0);
+    return Math.max(this.progression.playerStats().highScore, this.score());
   });
 
   // Computed canvas properties
@@ -176,8 +180,11 @@ export class GameState {
 
   endGame(): void {
     this.gameStatus.set("gameOver");
-    // TODO: Save high score, update statistics
-    // This will be handled by the game canvas component
+    this.progression.updateStats({
+      currentLength: this.currentLength(),
+      currentScore: this.score(),
+      playTime: this.gameTime(),
+    });
   }
 
   resetGame(): void {
@@ -644,13 +651,15 @@ export class GameState {
       )
     );
 
+    // Use cryptographically secure random for golden food chance
+    const randomArray = new Uint32Array(1);
+    crypto.getRandomValues(randomArray);
+    const isGolden = (randomArray[0] / 0xff_ff_ff_ff) < 0.1;
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
-      // eslint-disable-next-line sonarjs/pseudo-random
-      type: Math.random() < 0.1 ? "golden" : "normal",
-      // eslint-disable-next-line sonarjs/pseudo-random
-      value: Math.random() < 0.1 ? 5 : 1,
+      type: isGolden ? "golden" : "normal",
+      value: isGolden ? 5 : 1,
     };
 
     this.food.update((current) => [...current, food]);

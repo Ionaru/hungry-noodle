@@ -1,6 +1,6 @@
 {
   "name": "hungry-noodle",
-  "version": "0.1.0",
+  "version": "0.3.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
@@ -14,6 +14,7 @@
     "fix:style": "stylelint \"**/*.{css,scss}\" --fix",
     "fix:format": "prettier --write .",
     "fix:lint": "ng lint --fix",
+    "build:android:prod:apk": "tauri android build --apk --target aarch64",
     "tauri": "tauri"
   },
   "private": true,
@@ -32,6 +33,7 @@
     "@tailwindcss/postcss": "^4.1.12",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-store": "~2",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.2",
     "tailwindcss": "^4.1.12",
