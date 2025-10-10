@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  FA_TOKEN: ${{ secrets.FA_TOKEN }}
+
 jobs:
   audit:
     name: Audit dependencies
@@ -33,6 +36,4 @@ jobs:
         with:
           node-version: lts/*
       - run: pnpm install --frozen-lockfile
-        env:
-          FA_TOKEN: ${{ secrets.FA_TOKEN }}
       - run: pnpm run check
