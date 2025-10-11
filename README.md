@@ -4,7 +4,6 @@ An Android mobile game based on the classic Snake game, built with modern web te
 
 [![Download on Google Play](https://img.shields.io/badge/Download-Google%20Play-green?logo=google-play)](https://play.google.com/store/apps/details?id=com.hungry_noodle.app)
 [![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/Ionaru/hungry-noodle)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > **Note:** The app is currently in development. The Play Store link will be activated upon release.
 
@@ -23,7 +22,7 @@ Hungry Noodle is a family-friendly mobile game that reimagines the classic Snake
 
 ### Prerequisites
 
-- **Node.js** 18+ or higher
+- **Node.js** 18+
 - **pnpm** 10.18.2+ (package manager)
 - **Rust** (for Tauri development)
 - **Android Studio** (for Android builds)
@@ -215,15 +214,11 @@ We welcome contributions to Hungry Noodle! Here's how you can help:
 
 Interested in testing early versions? Watch this repository for beta testing announcements!
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - Built with [Angular](https://angular.dev/)
 - Powered by [Tauri](https://tauri.app/)
-- UI components from [Ionic Framework](https://ionicframework.com/)
+- Gesture detection from [Ionic Framework](https://ionicframework.com/)
 - Icons by [Font Awesome](https://fontawesome.com/)
 
 ## 📞 Contact
@@ -233,4 +228,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with 💚 by the Hungry Noodle team
+Made with 💚 by [@Ionaru](https://github.com/Ionaru)
