@@ -11,6 +11,9 @@ on:
 
 env:
   FA_TOKEN: ${{ secrets.FA_TOKEN }}
+  ANDROID_RELEASE_KEYSTORE: ${{ secrets.ANDROID_RELEASE_KEYSTORE }}
+  ANDROID_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+  ANDROID_RELEASE_KEYSTORE_ALIAS: ${{ secrets.ANDROID_RELEASE_KEYSTORE_ALIAS }}
   NDK_VERSION: 29.0.14206865
   JAVA_VERSION: 21
 
@@ -70,13 +73,13 @@ jobs:
 
       - name: Extract android signing key from env
         run: |
-          echo "${{ secrets.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/upload-keystore.jks.base64
+          echo "${{ env.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/upload-keystore.jks.base64
           base64 -d src-tauri/gen/android/upload-keystore.jks.base64 > src-tauri/gen/android/upload-keystore.jks
 
       - name: Create key.properties
         run: |
-          echo "keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}" > src-tauri/gen/android/key.properties
-          echo "password=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}" >> src-tauri/gen/android/key.properties
+          echo "keyAlias=${{ env.ANDROID_RELEASE_KEYSTORE_ALIAS }}" > src-tauri/gen/android/key.properties
+          echo "password=${{ env.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" >> src-tauri/gen/android/key.properties
           echo "storeFile=src-tauri/gen/android/upload-keystore.jks" >> src-tauri/gen/android/key.properties
 
       - run: pnpm install --frozen-lockfile
