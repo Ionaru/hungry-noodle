@@ -15,6 +15,7 @@
     "fix:format": "prettier --write .",
     "fix:lint": "ng lint --fix",
     "build:android:prod:apk": "tauri android build --apk --target aarch64",
+    "build:android:prod": "tauri android build",
     "tauri": "tauri"
   },
   "private": true,
