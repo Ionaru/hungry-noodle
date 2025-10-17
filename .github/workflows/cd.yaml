@@ -68,6 +68,17 @@ jobs:
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
+      - name: Extract android signing key from env
+        run: |
+          echo "${{ secrets.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/upload-keystore.jks.base64
+          base64 -d src-tauri/gen/android/upload-keystore.jks.base64 > src-tauri/gen/android/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          echo "keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}" > src-tauri/gen/android/key.properties
+          echo "password=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}" >> src-tauri/gen/android/key.properties
+          echo "storeFile=src-tauri/gen/android/upload-keystore.jks" >> src-tauri/gen/android/key.properties
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build:android:prod
         env:
