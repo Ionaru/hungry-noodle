@@ -1,4 +1,4 @@
-package com.hungry_noodle.app
+package com.ionaru.hungry_noodle
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
