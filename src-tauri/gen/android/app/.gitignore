@@ -1,4 +1,4 @@
-/src/main/java/com/hungry_noodle/app/generated
+/src/main/java/com/ionaru/hungry_noodle/generated
 /src/main/jniLibs/**/*.so
 /src/main/assets/tauri.conf.json
 /tauri.build.gradle.kts
