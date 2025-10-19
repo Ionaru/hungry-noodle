@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">hungry-noodle</string>
-    <string name="main_activity_title">hungry-noodle</string>
+    <string name="app_name">Hungry Noodle - Snake</string>
+    <string name="main_activity_title">Hungry Noodle - Snake</string>
 </resources>
