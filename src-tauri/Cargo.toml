@@ -1,6 +1,5 @@
 [package]
 name = "hungry-noodle"
-version = "0.3.3"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"

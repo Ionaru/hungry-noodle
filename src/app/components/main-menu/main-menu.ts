@@ -14,6 +14,7 @@ import {
   IconDefinition,
 } from "@fortawesome/angular-fontawesome";
 
+import packageJson from "../../../../package.json";
 import { Progression } from "../../services/progression";
 import { Store } from "../../services/store";
 
@@ -102,7 +103,7 @@ export class MainMenu {
   readonly totalScore = computed(
     () => this.progression.playerStats().totalScore,
   );
-  readonly version = "0.3.3";
+  readonly version = packageJson.version;
 
   // Computed for saved game info display
   readonly savedGameInfo = computed(() => {
