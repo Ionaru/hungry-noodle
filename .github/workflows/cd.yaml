@@ -87,3 +87,13 @@ jobs:
       - run: pnpm run build:android:prod
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-app-apk
+          path: src-tauri/gen/android/app/build/outputs/apk/release/app-release.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-app-bundle
+          path: src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab
