@@ -17,6 +17,11 @@ export const drawBackgroundPattern = (
   const cameraOffsetX = (camera.x - Math.floor(camera.x)) * gridSize;
   const cameraOffsetY = (camera.y - Math.floor(camera.y)) * gridSize;
 
+  // Fill the entire canvas with the background color first to prevent gaps
+  context.fillStyle = "#059670";
+  context.fillRect(0, 0, width, height);
+
+  // Then draw the checkerboard pattern over it
   for (let x = viewport.left; x < viewport.right; x++) {
     for (let y = viewport.top; y < viewport.bottom; y++) {
       // Calculate screen position with smooth camera offset
