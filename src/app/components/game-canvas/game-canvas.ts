@@ -214,7 +214,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     const rect = container.getBoundingClientRect();
     const width = Math.floor(Math.min(rect.width, maxWidth));
     const height = Math.floor(Math.min(rect.height, maxHeight));
-    this.#gameState.updateCanvasSize(width, height - 8);
+    this.#gameState.updateCanvasSize(width - 8, height - 8);
   }
 
   private setupGestures(): void {
