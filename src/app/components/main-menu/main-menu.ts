@@ -113,7 +113,7 @@ export class MainMenu {
   });
 
   // Public computed values for saved game data
-  readonly hasSavedGame = computed(() => this.#store.savedGame() !== null);
+  readonly hasSavedGame = computed(() => Boolean(this.#store.savedGame()));
   readonly savedGameScore = computed(() => this.#store.savedGame()?.score ?? 0);
   readonly savedGameLength = computed(
     () => this.#store.savedGame()?.snake.length ?? 0,
