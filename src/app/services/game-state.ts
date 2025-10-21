@@ -722,12 +722,7 @@ export class GameState {
     this.#pendingDirection = null;
     this.#turboActive = false;
     this.#postTurboSlowRemainingMs = 0;
-    this.#headPath = [];
+    this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
-
-    // Re-seed the head path for smooth movement
-    if (savedGame.snake.length > 0) {
-      this.recordHeadPosition(savedGame.snake[0].x, savedGame.snake[0].y);
-    }
   }
 }
