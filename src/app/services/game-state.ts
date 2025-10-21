@@ -722,19 +722,7 @@ export class GameState {
     this.#pendingDirection = null;
     this.#turboActive = false;
     this.#postTurboSlowRemainingMs = 0;
-    this.#headPath = [];
+    this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
-
-    // Re-seed the head path for smooth movement
-    // Reconstruct the path from all snake segments to prevent immediate collision
-    if (savedGame.snake.length > 0) {
-      // Add all snake segments to the path in order (head to tail)
-      // The path stores positions from newest (head at index 0) to oldest (tail at end)
-      // This matches how recordHeadPosition() uses unshift() to add new positions at index 0
-      for (let index = 0; index < savedGame.snake.length; index++) {
-        const segment = savedGame.snake[index];
-        this.#headPath.push({ x: segment.x, y: segment.y });
-      }
-    }
   }
 }
