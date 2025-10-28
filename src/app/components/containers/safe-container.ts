@@ -4,8 +4,7 @@ import { Component } from "@angular/core";
   selector: "app-safe-container",
   template: `<ng-content />`,
   host: {
-    class:
-      "safe-area-top safe-area-bottom safe-area-left safe-area-right h-full w-full",
+    class: "block safe-height safe-width",
   },
 })
 export class SafeContainer {}
