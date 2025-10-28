@@ -1,12 +1,12 @@
 <app-safe-container>
   <div
-    class="flex h-full w-full flex-col items-center justify-center bg-gray-900"
+    class="flex h-full w-full flex-col items-center justify-center bg-gray-900 font-[gorditas]"
     #containerElement
   >
     <div class="relative touch-none" #gestureContainer>
       <canvas
         #gameCanvas
-        class="pointer-events-none rounded-2xl border-4 border-white bg-green-100 shadow-2xl"
+        class="pointer-events-none rounded-2xl border-4 border-[#ffbb00] bg-green-100 shadow-2xl"
         [width]="gameState.canvasWidth()"
         [height]="gameState.canvasHeight()"
       >

@@ -31,22 +31,22 @@ interface MenuOption {
   selector: "app-main-menu",
   template: `
     <div
-      class="safe-area-top safe-area-bottom flex h-screen flex-col items-center justify-between bg-gradient-to-br from-orange-400 via-black to-yellow-400 p-6"
+      class="safe-area-top safe-area-bottom flex h-screen flex-col items-center justify-between bg-linear-to-br/srgb from-[#ffbb00] to-[#00ffbb] p-6 font-[gorditas]"
     >
       <!-- Game Title Section -->
       <div class="flex flex-1 flex-col items-center justify-center text-center">
         <h1
-          class="mb-4 text-4xl font-bold text-white drop-shadow-lg sm:text-6xl"
+          class="mb-4 text-4xl font-bold text-black drop-shadow-lg sm:text-6xl"
         >
           Hungry Noodle
         </h1>
-        <p class="text-lg text-white opacity-90 sm:text-xl">
+        <p class="text-lg text-black opacity-90 sm:text-xl">
           Feed the noodle, grow your score!
         </p>
 
         <!-- Game Stats Preview - Mobile Optimized -->
         <div
-          class="mt-4 rounded-2xl bg-white/20 p-4 text-white backdrop-blur-sm"
+          class="mt-4 rounded-2xl bg-white/20 p-4 text-black backdrop-blur-sm"
         >
           <div class="grid grid-cols-2 gap-6">
             <div class="text-center">
@@ -88,7 +88,7 @@ interface MenuOption {
       </div>
 
       <!-- Version Info -->
-      <div class="mt-4 text-sm text-white/60">v{{ version }}</div>
+      <div class="mt-4 text-sm text-black/60">v{{ version }}</div>
     </div>
   `,
   imports: [FaIconComponent],
@@ -125,22 +125,15 @@ export class MainMenu {
     return [
       {
         id: "play",
-        label: hasSavedGame ? "Continue" : "Play",
+        label: hasSavedGame ? "Continue" : "Quick Play",
         icon: faGamepad,
         route: "/play",
       },
       {
         id: "progression",
-        label: "Progress",
+        label: "Journey",
         icon: faSignalBars,
         route: "/progression",
-        disabled: true,
-      },
-      {
-        id: "shop",
-        label: "Shop",
-        icon: faCartShopping,
-        route: "/shop",
         disabled: true,
       },
       {
@@ -148,6 +141,13 @@ export class MainMenu {
         label: "Daily Challenges",
         icon: faStar,
         route: "/challenges",
+        disabled: true,
+      },
+      {
+        id: "shop",
+        label: "Shop",
+        icon: faCartShopping,
+        route: "/shop",
         disabled: true,
       },
       {
