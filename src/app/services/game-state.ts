@@ -1,4 +1,7 @@
-import { Injectable, signal, computed, inject } from "@angular/core";
+import { Injectable, signal, computed, inject, effect } from "@angular/core";
+
+import { MapState } from "../map/state";
+import { TerrainType, type MapConfig } from "../map/types";
 
 import { Progression } from "./progression";
 import { SavedGame } from "./storage/data";
@@ -37,6 +40,7 @@ interface SpeedConfig {
 export class GameState {
   readonly progression = inject(Progression);
   readonly store = inject(Store);
+  readonly #map = inject(MapState);
 
   // Core game state signals
   readonly score = signal(0);
@@ -51,9 +55,9 @@ export class GameState {
   readonly canvasHeight = signal(480); // Will be updated dynamically
   readonly gridSize = signal(16); // Smaller grid for mobile
 
-  // World size - much larger than screen
-  readonly worldWidth = signal(80); // World width in grid units (80 * 16 = 1280px)
-  readonly worldHeight = signal(120); // World height in grid units (120 * 16 = 1920px)
+  // World size - synced from MapState
+  readonly worldWidth = signal(80); // grid units
+  readonly worldHeight = signal(120); // grid units
 
   // Camera/viewport system
   readonly camera = signal<Camera>({ x: 0, y: 0 }); // Current camera position in grid units
@@ -131,6 +135,23 @@ export class GameState {
     };
   });
 
+  // Map theme proxy for drawing
+  readonly mapTheme = computed(() => this.#map.mapData().theme);
+
+  constructor() {
+    // Sync world/grid from current map config
+    effect(() => {
+      const md = this.#map.mapData();
+      // keep grid size aligned with map for rendering/pixel math
+      if (this.gridSize() !== md.config.gridSize)
+        this.gridSize.set(md.config.gridSize);
+      if (this.worldWidth() !== md.config.width)
+        this.worldWidth.set(md.config.width);
+      if (this.worldHeight() !== md.config.height)
+        this.worldHeight.set(md.config.height);
+    });
+  }
+
   // Mobile-responsive canvas sizing
   updateCanvasSize(containerWidth: number, containerHeight: number): void {
     let newWidth = containerWidth;
@@ -154,6 +175,13 @@ export class GameState {
 
   // Game actions
   startGame(): void {
+    // Initialize a default map (temporary until UI supplies config)
+    this.#map.init({
+      width: 80,
+      height: 120,
+      gridSize: 16,
+      terrainType: TerrainType.GRASSLANDS,
+    });
     this.initializeGame();
     this.gameStatus.set("playing");
   }
@@ -299,6 +327,12 @@ export class GameState {
       return;
     }
 
+    // Check obstacle collision (rounded to nearest grid cell)
+    if (this.isBlocked(Math.round(newHeadX), Math.round(newHeadY))) {
+      this.endGame();
+      return;
+    }
+
     // Check if head has reached a grid position and handle direction change
     const headGridX = Math.round(newHeadX);
     const headGridY = Math.round(newHeadY);
@@ -316,6 +350,12 @@ export class GameState {
       // Snap head to exact grid position for clean turns
       const newSnake = [...snake];
       newSnake[0] = { x: headGridX, y: headGridY };
+
+      // Check obstacle collision at snapped grid position
+      if (this.isBlocked(headGridX, headGridY)) {
+        this.endGame();
+        return;
+      }
 
       // Record this grid position in the path
       this.recordHeadPosition(headGridX, headGridY);
@@ -641,8 +681,10 @@ export class GameState {
     const snake = this.snake();
 
     let foodPosition: { x: number; y: number };
+    const maxAttempts = 100; // Prevent infinite loops
+    let attempts = 0;
 
-    // Find empty position for food in the world
+    // Find good position for food in the world
     do {
       foodPosition = {
         // eslint-disable-next-line sonarjs/pseudo-random
@@ -650,12 +692,29 @@ export class GameState {
         // eslint-disable-next-line sonarjs/pseudo-random
         y: Math.floor(Math.random() * gridHeight),
       };
+      attempts++;
     } while (
-      snake.some(
-        (segment) =>
-          segment.x === foodPosition.x && segment.y === foodPosition.y,
-      )
+      attempts < maxAttempts &&
+      !this.isValidFoodPosition(foodPosition.x, foodPosition.y, snake)
     );
+
+    // If we couldn't find a valid position after many attempts, just place it somewhere safe
+    if (attempts >= maxAttempts) {
+      do {
+        foodPosition = {
+          // eslint-disable-next-line sonarjs/pseudo-random
+          x: Math.floor(Math.random() * gridWidth),
+          // eslint-disable-next-line sonarjs/pseudo-random
+          y: Math.floor(Math.random() * gridHeight),
+        };
+      } while (
+        this.isBlocked(foodPosition.x, foodPosition.y) ||
+        snake.some(
+          (segment) =>
+            segment.x === foodPosition.x && segment.y === foodPosition.y,
+        )
+      );
+    }
 
     // Use cryptographically secure random for golden food chance
     const randomArray = new Uint32Array(1);
@@ -676,10 +735,60 @@ export class GameState {
     }
   }
 
+  private isValidFoodPosition(
+    x: number,
+    y: number,
+    snake: SnakeSegment[],
+  ): boolean {
+    // Basic checks
+    if (this.isBlocked(x, y)) return false;
+
+    // Check if snake is already there
+    if (snake.some((segment) => segment.x === x && segment.y === y))
+      return false;
+
+    // Check if too close to obstacles (minimum 2 tiles away)
+
+    if (this.#map.isNearObstacle(x, y, 2)) return false;
+
+    // Check if there's enough open space around the position (at least 3x3 area)
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const checkX = x + dx;
+        const checkY = y + dy;
+        if (this.isBlocked(checkX, checkY)) {
+          // If any adjacent tile is blocked, this position is too cramped
+          return false;
+        }
+      }
+    }
+
+    // Basic reachability check - ensure there's a path to the food
+    // This is a simplified check - we just ensure the food isn't completely surrounded by obstacles
+    let openSides = 0;
+    const directions = [
+      { x: 0, y: -1 }, // up
+      { x: 1, y: 0 }, // right
+      { x: 0, y: 1 }, // down
+      { x: -1, y: 0 }, // left
+    ];
+
+    for (const direction of directions) {
+      const checkX = x + direction.x;
+      const checkY = y + direction.y;
+      if (!this.isBlocked(checkX, checkY)) {
+        openSides++;
+      }
+    }
+
+    // Require at least 2 open sides for accessibility
+    return openSides >= 2;
+  }
+
   // Save/Load functionality
   toSavedGame(): SavedGame {
     return {
-      version: 1 as number,
+      version: 1,
       score: this.score(),
       snake: this.snake(),
       food: this.food(),
@@ -689,14 +798,27 @@ export class GameState {
       worldWidth: this.worldWidth(),
       worldHeight: this.worldHeight(),
       camera: this.camera(),
+      mapTerrainType: this.#map.mapData().config.terrainType,
     };
   }
 
   loadFromSavedGame(savedGame: SavedGame): void {
-    if (savedGame.version !== 1) {
-      throw new Error(
-        `Unsupported save version: ${savedGame.version.toString()}`,
-      );
+    // Backward/forward compatible load
+    let cfg: MapConfig | null = null;
+    if (savedGame.version === 1) {
+      cfg = {
+        width: savedGame.worldWidth,
+        height: savedGame.worldHeight,
+        gridSize: savedGame.gridSize,
+        terrainType: TerrainType.GRASSLANDS,
+      };
+    }
+
+    if (cfg) {
+      this.#map.init(cfg);
+      this.gridSize.set(cfg.gridSize);
+      this.worldWidth.set(cfg.width);
+      this.worldHeight.set(cfg.height);
     }
 
     // Load all the basic state
@@ -713,9 +835,6 @@ export class GameState {
     );
     this.direction.set(savedGame.direction);
     this.gameTime.set(savedGame.gameTime);
-    this.gridSize.set(savedGame.gridSize);
-    this.worldWidth.set(savedGame.worldWidth);
-    this.worldHeight.set(savedGame.worldHeight);
     this.camera.set({ ...savedGame.camera });
 
     // Reset internal state that can't be safely serialized
@@ -724,5 +843,15 @@ export class GameState {
     this.#postTurboSlowRemainingMs = 0;
     this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
+  }
+
+  // Proxy to MapState for obstacle checks
+  isBlocked(x: number, y: number): boolean {
+    return this.#map.isBlocked(x, y);
+  }
+
+  // Public access to map state for other components
+  get map(): MapState {
+    return this.#map;
   }
 }

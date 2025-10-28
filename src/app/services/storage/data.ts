@@ -1,3 +1,5 @@
+import { TerrainType } from "../../map/types";
+
 export enum StoreKey {
   HighScore = "highScore",
   GamesPlayed = "gamesPlayed",
@@ -21,6 +23,7 @@ export interface SavedGame {
   worldWidth: number;
   worldHeight: number;
   camera: { x: number; y: number };
+  mapTerrainType?: TerrainType;
 }
 
 export interface HungryStore {

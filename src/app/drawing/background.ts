@@ -9,6 +9,7 @@ export const drawBackgroundPattern = (
   const gridSize = gameState.gridSize();
   const camera = gameState.camera();
   const viewport = gameState.viewport();
+  const theme = gameState.mapTheme();
 
   // Create alternating tile pattern for visual movement feedback
   context.save();
@@ -18,7 +19,7 @@ export const drawBackgroundPattern = (
   const cameraOffsetY = (camera.y - Math.floor(camera.y)) * gridSize;
 
   // Fill the entire canvas with the background color first to prevent gaps
-  context.fillStyle = "#059670";
+  context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
 
   // Then draw the checkerboard pattern over it
@@ -38,7 +39,7 @@ export const drawBackgroundPattern = (
         // Create checkerboard pattern with subtle color variation
         const isEvenTile = (x + y) % 2 === 0;
 
-        context.fillStyle = isEvenTile ? "#059670" : "#008236";
+        context.fillStyle = isEvenTile ? theme.background : theme.backgroundAlt;
 
         context.fillRect(screenX, screenY, gridSize, gridSize);
       }
