@@ -21,6 +21,7 @@ body {
 
 /* Fix for screen drag stretching */
 html {
+  position: fixed;
   height: 100svh;
   width: 100svw;
   background: black;
