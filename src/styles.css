@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+  --font-gorditas: "Gorditas", serif;
+}
+
+@theme inline {
+  --color-primary: var(--color-amber-400);
+  --color-secondary: var(--color-emerald-400);
+}
+
 /* Mobile-first global styles */
 html,
 body {
