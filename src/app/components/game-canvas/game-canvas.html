@@ -1,12 +1,12 @@
 <app-safe-container>
   <div
-    class="flex h-full w-full flex-col items-center justify-center bg-gray-900 font-gorditas"
+    class="font-gorditas flex h-full w-full flex-col items-center justify-center bg-gray-900"
     #containerElement
   >
     <div class="relative touch-none" #gestureContainer>
       <canvas
         #gameCanvas
-        class="pointer-events-none rounded-2xl border-4 border-primary bg-green-100 shadow-2xl"
+        class="border-primary pointer-events-none rounded-2xl border-4 bg-green-100 shadow-2xl"
         [width]="gameState.canvasWidth()"
         [height]="gameState.canvasHeight()"
       >
@@ -79,7 +79,7 @@
                 <div class="space-y-3">
                   <button
                     (click)="togglePause()"
-                    class="w-full rounded-xl bg-primary py-4 text-lg font-semibold text-black transition-all duration-200 hover:scale-105 hover:bg-primary/80 active:scale-95"
+                    class="bg-primary hover:bg-primary/80 w-full rounded-xl py-4 text-lg font-semibold text-black transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     Resume Game
                   </button>

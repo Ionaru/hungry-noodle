@@ -31,7 +31,7 @@ interface MenuOption {
   selector: "app-main-menu",
   template: `
     <div
-      class="safe-area-top safe-area-bottom flex h-screen flex-col items-center justify-between bg-linear-to-br/srgb from-primary to-secondary p-6 font-gorditas"
+      class="safe-area-top safe-area-bottom from-primary to-secondary font-gorditas flex h-screen flex-col items-center justify-between bg-linear-to-br/srgb p-6"
     >
       <!-- Game Title Section -->
       <div class="flex flex-1 flex-col items-center justify-center text-center">
