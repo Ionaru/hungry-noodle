@@ -1,3 +1,4 @@
+import { FoodType } from "../food/types";
 import { GameState } from "../services/game-state";
 
 import { drawRoundedRect } from "./shapes";
@@ -25,7 +26,7 @@ export const drawFood = (
       const screenY = (item.y - camera.y) * gridSize + 2;
       const size = gridSize - 4;
 
-      if (item.type === "golden") {
+      if (item.type === FoodType.GOLDEN) {
         // Golden food with glow effect
         context.save();
         context.shadowColor = "#F59E0B";

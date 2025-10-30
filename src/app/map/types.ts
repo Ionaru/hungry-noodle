@@ -1,16 +1,13 @@
+export type Color = `#${string}`;
+
 export enum TerrainType {
   GRASSLANDS = "GRASSLANDS",
   FOREST = "FOREST",
+  JUNGLE = "JUNGLE",
   DESERT = "DESERT",
-  MAZE = "MAZE",
+  ROCKY = "MAZE",
   SNOWY = "SNOWY",
   HELLSCAPE = "HELLSCAPE",
-}
-
-export enum ObstacleType {
-  WALL = "WALL",
-  ROCK = "ROCK",
-  BUSH = "BUSH",
 }
 
 export interface MapConfig {
@@ -21,14 +18,15 @@ export interface MapConfig {
 }
 
 export interface MapTheme {
-  background: string;
-  backgroundAlt: string;
+  background: Color;
+  backgroundAlt: Color;
+  border: Color;
+  food: Color;
+  foodGolden: Color;
 }
 
 export interface MapData {
   config: MapConfig;
-  // List of obstacle positions for easier serialization and manipulation
-  obstacles: GridIndex[];
   theme: MapTheme;
 }
 

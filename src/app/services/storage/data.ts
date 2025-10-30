@@ -1,4 +1,6 @@
+import { Food } from "../../food/types";
 import { TerrainType } from "../../map/types";
+import { SnakeSegment } from "../../snake/types";
 
 export enum StoreKey {
   HighScore = "highScore",
@@ -15,8 +17,8 @@ export enum StoreKey {
 export interface SavedGame {
   version: number;
   score: number;
-  snake: { x: number; y: number }[];
-  food: { x: number; y: number; value: number }[];
+  snake: SnakeSegment[];
+  food: Food[];
   direction: "up" | "down" | "left" | "right" | null;
   gameTime: number;
   gridSize: number;

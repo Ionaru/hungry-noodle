@@ -1,30 +1,20 @@
 import { Injectable, signal, computed, inject, effect } from "@angular/core";
 
+import { Food, FoodType } from "../food/types";
 import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
+import { SnakeSegment } from "../snake/types";
 
 import { Progression } from "./progression";
 import { SavedGame } from "./storage/data";
 import { Store } from "./store";
-
-export interface SnakeSegment {
-  x: number; // Floating point position for smooth movement
-  y: number; // Floating point position for smooth movement
-}
-
-export interface Food {
-  x: number;
-  y: number;
-  type: "normal" | "golden" | "special";
-  value: number;
-}
 
 export interface Camera {
   x: number;
   y: number;
 }
 
-export type GameStatus = "menu" | "playing" | "paused" | "gameOver";
+export type GameStatus = "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
 
 interface SpeedConfig {
@@ -175,7 +165,7 @@ export class GameState {
 
   // Game actions
   startGame(): void {
-    // Initialize a default map (temporary until UI supplies config)
+    // TODO: Replace with actual map config
     this.#map.init({
       width: 80,
       height: 120,
@@ -217,14 +207,6 @@ export class GameState {
     });
     // Clear saved game when game ends - no continues after game over
     this.store.clearSavedGame();
-  }
-
-  resetGame(): void {
-    this.score.set(0);
-    this.gameTime.set(0);
-    this.#headPath = []; // Reset path tracking
-    this.initializeGame();
-    this.gameStatus.set("menu");
   }
 
   changeDirection(newDirection: Direction): void {
@@ -327,12 +309,6 @@ export class GameState {
       return;
     }
 
-    // Check obstacle collision (rounded to nearest grid cell)
-    if (this.isBlocked(Math.round(newHeadX), Math.round(newHeadY))) {
-      this.endGame();
-      return;
-    }
-
     // Check if head has reached a grid position and handle direction change
     const headGridX = Math.round(newHeadX);
     const headGridY = Math.round(newHeadY);
@@ -350,12 +326,6 @@ export class GameState {
       // Snap head to exact grid position for clean turns
       const newSnake = [...snake];
       newSnake[0] = { x: headGridX, y: headGridY };
-
-      // Check obstacle collision at snapped grid position
-      if (this.isBlocked(headGridX, headGridY)) {
-        this.endGame();
-        return;
-      }
 
       // Record this grid position in the path
       this.recordHeadPosition(headGridX, headGridY);
@@ -668,7 +638,8 @@ export class GameState {
       this.#headPath.push({ ...initialSnake[index] });
     }
 
-    // Reset pending direction
+    // Reset direction
+    this.direction.set(null);
     this.#pendingDirection = null;
 
     this.updateCamera(); // Center camera on snake
@@ -708,8 +679,7 @@ export class GameState {
           y: Math.floor(Math.random() * gridHeight),
         };
       } while (
-        this.isBlocked(foodPosition.x, foodPosition.y) ||
-        snake.some(
+snake.some(
           (segment) =>
             segment.x === foodPosition.x && segment.y === foodPosition.y,
         )
@@ -723,7 +693,7 @@ export class GameState {
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
-      type: isGolden ? "golden" : "normal",
+      type: isGolden ? FoodType.GOLDEN : FoodType.NORMAL,
       value: isGolden ? 5 : 1,
     };
 
@@ -740,49 +710,8 @@ export class GameState {
     y: number,
     snake: SnakeSegment[],
   ): boolean {
-    // Basic checks
-    if (this.isBlocked(x, y)) return false;
-
     // Check if snake is already there
-    if (snake.some((segment) => segment.x === x && segment.y === y))
-      return false;
-
-    // Check if too close to obstacles (minimum 2 tiles away)
-
-    if (this.#map.isNearObstacle(x, y, 2)) return false;
-
-    // Check if there's enough open space around the position (at least 3x3 area)
-    for (let dx = -1; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        const checkX = x + dx;
-        const checkY = y + dy;
-        if (this.isBlocked(checkX, checkY)) {
-          // If any adjacent tile is blocked, this position is too cramped
-          return false;
-        }
-      }
-    }
-
-    // Basic reachability check - ensure there's a path to the food
-    // This is a simplified check - we just ensure the food isn't completely surrounded by obstacles
-    let openSides = 0;
-    const directions = [
-      { x: 0, y: -1 }, // up
-      { x: 1, y: 0 }, // right
-      { x: 0, y: 1 }, // down
-      { x: -1, y: 0 }, // left
-    ];
-
-    for (const direction of directions) {
-      const checkX = x + direction.x;
-      const checkY = y + direction.y;
-      if (!this.isBlocked(checkX, checkY)) {
-        openSides++;
-      }
-    }
-
-    // Require at least 2 open sides for accessibility
-    return openSides >= 2;
+    return !(snake.some((segment) => segment.x === x && segment.y === y));
   }
 
   // Save/Load functionality
@@ -830,7 +759,7 @@ export class GameState {
         x: f.x,
         y: f.y,
         value: f.value,
-        type: f.value > 1 ? "golden" : ("normal" as const),
+        type: f.type,
       })),
     );
     this.direction.set(savedGame.direction);
@@ -843,15 +772,5 @@ export class GameState {
     this.#postTurboSlowRemainingMs = 0;
     this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
-  }
-
-  // Proxy to MapState for obstacle checks
-  isBlocked(x: number, y: number): boolean {
-    return this.#map.isBlocked(x, y);
-  }
-
-  // Public access to map state for other components
-  get map(): MapState {
-    return this.#map;
   }
 }

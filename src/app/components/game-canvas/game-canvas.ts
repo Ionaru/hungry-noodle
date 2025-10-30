@@ -64,6 +64,8 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     return this.#gameState;
   }
 
+  readonly mapBorderColor = computed(() => this.#gameState.mapTheme().border);
+
   #gesture?: Gesture;
   #gameLoopId?: number;
   #lastUpdateTime = 0;
@@ -177,10 +179,9 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       "orientationchange",
       this.#handleOrientationChange,
     );
-    // Initialize a new game only when there is no active/paused game
-    const status = this.#gameState.gameStatus();
-    if (this.#gameState.snake().length === 0 || status === "menu") {
-      this.#gameState.startGame();
+    // Initialize a new game only when there is no active/paused game, or when the last game was over
+    if (this.#gameState.gameStatus() === "gameOver" || this.#gameState.snake().length === 0) {
+      this.startGame();
     }
   }
 

@@ -1,3 +1,4 @@
+import { FoodType } from "../food/types";
 import { GameState } from "../services/game-state";
 
 export const drawFoodDirectionIndicator = (
@@ -96,7 +97,7 @@ export const drawFoodDirectionIndicator = (
   context.fill();
 
   // Draw indicator circle
-  const foodColor = nearestFood.type === "golden" ? "#F59E0B" : "#EF4444";
+  const foodColor = nearestFood.type === FoodType.GOLDEN ? "#F59E0B" : "#EF4444";
   context.fillStyle = foodColor;
   context.beginPath();
   context.arc(indicatorX, indicatorY, indicatorRadius, 0, Math.PI * 2);
