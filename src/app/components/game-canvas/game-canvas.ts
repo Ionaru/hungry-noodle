@@ -180,7 +180,10 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
       this.#handleOrientationChange,
     );
     // Initialize a new game only when there is no active/paused game, or when the last game was over
-    if (this.#gameState.gameStatus() === "gameOver" || this.#gameState.snake().length === 0) {
+    if (
+      this.#gameState.gameStatus() === "gameOver" ||
+      this.#gameState.snake().length === 0
+    ) {
       this.startGame();
     }
   }

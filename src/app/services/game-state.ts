@@ -679,7 +679,7 @@ export class GameState {
           y: Math.floor(Math.random() * gridHeight),
         };
       } while (
-snake.some(
+        snake.some(
           (segment) =>
             segment.x === foodPosition.x && segment.y === foodPosition.y,
         )
@@ -711,7 +711,7 @@ snake.some(
     snake: SnakeSegment[],
   ): boolean {
     // Check if snake is already there
-    return !(snake.some((segment) => segment.x === x && segment.y === y));
+    return !snake.some((segment) => segment.x === x && segment.y === y);
   }
 
   // Save/Load functionality

@@ -1,4 +1,6 @@
+import { Color, MapTheme } from "../map/types";
 import { GameState } from "../services/game-state";
+import { SnakeSegment } from "../snake/types";
 
 export const drawBackgroundPattern = (
   context: CanvasRenderingContext2D,
@@ -10,6 +12,7 @@ export const drawBackgroundPattern = (
   const camera = gameState.camera();
   const viewport = gameState.viewport();
   const theme = gameState.mapTheme();
+  const snake = gameState.snake();
 
   // Create alternating tile pattern for visual movement feedback
   context.save();
@@ -36,15 +39,39 @@ export const drawBackgroundPattern = (
         screenX > -gridSize &&
         screenY > -gridSize
       ) {
-        // Create checkerboard pattern with subtle color variation
-        const isEvenTile = (x + y) % 2 === 0;
-
-        context.fillStyle = isEvenTile ? theme.background : theme.backgroundAlt;
-
+        context.fillStyle = getTileColor(x, y, snake, theme);
         context.fillRect(screenX, screenY, gridSize, gridSize);
       }
     }
   }
 
   context.restore();
+};
+const getTileColor = (
+  x: number,
+  y: number,
+  snake: SnakeSegment[],
+  theme: MapTheme,
+): Color => {
+  // Color occupied tiles a single color
+  if (snake.length > 0) {
+    for (let index = 1; index < snake.length - 1; index++) {
+      const segment = snake[index];
+      const segmentX = Math.floor(segment.x);
+      const segmentXNext = Math.ceil(segment.x);
+      const segmentY = Math.floor(segment.y);
+      const segmentYNext = Math.ceil(segment.y);
+
+      if (
+        (segmentX === x && segmentY === y) ||
+        (segmentXNext === x && segmentYNext === y)
+      ) {
+        return theme.background;
+      }
+    }
+  }
+
+  // Otherwise, create checkerboard pattern with subtle color variation
+  const isEvenTile = (x + y) % 2 === 0;
+  return isEvenTile ? theme.background : theme.backgroundAlt;
 };

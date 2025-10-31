@@ -19,9 +19,7 @@ export class Play {
       const savedGame = this.store.savedGame();
 
       // Only load if we have a saved game and the current game is not active
-      if (
-        savedGame && this.gameState.snake().length === 0
-      ) {
+      if (savedGame && this.gameState.snake().length === 0) {
         try {
           this.gameState.loadFromSavedGame(savedGame);
           // Set to paused state so player must press Resume
