@@ -664,21 +664,12 @@ export class GameState {
       !this.isValidFoodPosition(foodPosition.x, foodPosition.y, snake)
     );
 
-    // If we couldn't find a valid position after many attempts, just place it somewhere safe
+    // If we couldn't find a valid position after many attempts, give up.
     if (attempts >= maxAttempts) {
-      do {
-        foodPosition = {
-          // eslint-disable-next-line sonarjs/pseudo-random
-          x: Math.floor(Math.random() * gridWidth),
-          // eslint-disable-next-line sonarjs/pseudo-random
-          y: Math.floor(Math.random() * gridHeight),
-        };
-      } while (
-        snake.some(
-          (segment) =>
-            segment.x === foodPosition.x && segment.y === foodPosition.y,
-        )
+      console.error(
+        "Failed to find a valid food position after many attempts.",
       );
+      return;
     }
 
     // Use cryptographically secure random for golden food chance
@@ -700,6 +691,11 @@ export class GameState {
     }
   }
 
+  /**
+   * Will check if the given position is valid for a food item.
+   * Currently, it only checks if the position is not occupied by the snake.
+   * In the future, it will also check if the position is not blocked by obstacles.
+   */
   private isValidFoodPosition(
     x: number,
     y: number,
