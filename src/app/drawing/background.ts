@@ -34,7 +34,9 @@ export const drawBackgroundPattern = (
       occupiedTiles.add(`${segmentX.toString()},${segmentY.toString()}`);
       const segmentXNext = Math.ceil(segment.x);
       const segmentYNext = Math.ceil(segment.y);
-      occupiedTiles.add(`${segmentXNext.toString()},${segmentYNext.toString()}`);
+      occupiedTiles.add(
+        `${segmentXNext.toString()},${segmentYNext.toString()}`,
+      );
     }
   }
 
