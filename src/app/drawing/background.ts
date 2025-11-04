@@ -1,6 +1,5 @@
 import { Color, MapTheme } from "../map/types";
 import { GameState } from "../services/game-state";
-import { SnakeSegment } from "../snake/types";
 
 export const drawBackgroundPattern = (
   context: CanvasRenderingContext2D,
@@ -25,6 +24,20 @@ export const drawBackgroundPattern = (
   context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
 
+  // Color the tiles under the snake body, not the head or tail.
+  const occupiedTiles = new Set<`${string},${string}`>();
+  if (snake.length > 0) {
+    for (let index = 1; index < snake.length - 1; index++) {
+      const segment = snake[index];
+      const segmentX = Math.floor(segment.x);
+      const segmentY = Math.floor(segment.y);
+      occupiedTiles.add(`${segmentX.toString()},${segmentY.toString()}`);
+      const segmentXNext = Math.ceil(segment.x);
+      const segmentYNext = Math.ceil(segment.y);
+      occupiedTiles.add(`${segmentXNext.toString()},${segmentYNext.toString()}`);
+    }
+  }
+
   // Then draw the checkerboard pattern over it
   for (let x = viewport.left; x < viewport.right; x++) {
     for (let y = viewport.top; y < viewport.bottom; y++) {
@@ -39,7 +52,7 @@ export const drawBackgroundPattern = (
         screenX > -gridSize &&
         screenY > -gridSize
       ) {
-        context.fillStyle = getTileColor(x, y, snake, theme);
+        context.fillStyle = getTileColor(x, y, occupiedTiles, theme);
         context.fillRect(screenX, screenY, gridSize, gridSize);
       }
     }
@@ -50,26 +63,12 @@ export const drawBackgroundPattern = (
 const getTileColor = (
   x: number,
   y: number,
-  snake: SnakeSegment[],
+  occupiedTiles: Set<`${string},${string}`>,
   theme: MapTheme,
 ): Color => {
   // Color snake-occupied tiles a single color
-  if (snake.length > 0) {
-    // Color the tiles under the snake body, not the head or tail.
-    for (let index = 1; index < snake.length - 1; index++) {
-      const segment = snake[index];
-      const segmentX = Math.floor(segment.x);
-      const segmentXNext = Math.ceil(segment.x);
-      const segmentY = Math.floor(segment.y);
-      const segmentYNext = Math.ceil(segment.y);
-
-      if (
-        (segmentX === x && segmentY === y) ||
-        (segmentXNext === x && segmentYNext === y)
-      ) {
-        return theme.background;
-      }
-    }
+  if (occupiedTiles.has(`${x.toString()},${y.toString()}`)) {
+    return theme.background;
   }
 
   // Otherwise, create checkerboard pattern with subtle color variation
