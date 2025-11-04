@@ -1,5 +1,5 @@
-name: "Setup JavaScript"
-description: "Setup JavaScript dependencies"
+name: "Build Android App"
+description: "Build the Android app"
 
 runs:
   using: "composite"

@@ -22,11 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version: lts/*
-          package-manager-cache: false
+      - uses: ./.github/actions/setup-js
       - run: pnpm audit --prod
 
   check:
@@ -35,11 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version: lts/*
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup-js
       - run: pnpm run check
 
   build:
@@ -49,8 +41,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-js
-
       - uses: ./.github/actions/build
 
       - uses: actions/upload-artifact@v4
