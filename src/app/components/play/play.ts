@@ -17,13 +17,9 @@ export class Play {
     // Load saved game on component init if present and game isn't already active
     effect(() => {
       const savedGame = this.store.savedGame();
-      const currentStatus = this.gameState.gameStatus();
 
       // Only load if we have a saved game and the current game is not active
-      if (
-        savedGame &&
-        (currentStatus === "menu" || this.gameState.snake().length === 0)
-      ) {
+      if (savedGame && this.gameState.snake().length === 0) {
         try {
           this.gameState.loadFromSavedGame(savedGame);
           // Set to paused state so player must press Resume

@@ -16,8 +16,8 @@ export const drawSnake = (
 
   // Draw snake body first (batch all body segments that are visible)
   if (snake.length > 1) {
-    context.fillStyle = "#374151";
     for (let index = 1; index < snake.length; index++) {
+      context.fillStyle = index % 2 === 0 ? "#374151" : "#4c596f";
       const segment = snake[index];
 
       // Check if segment is within viewport (with some margin for smooth positions)

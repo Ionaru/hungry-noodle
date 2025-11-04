@@ -1,3 +1,4 @@
+import { FoodType } from "../food/types";
 import { GameState } from "../services/game-state";
 
 import { drawRoundedRect } from "./shapes";
@@ -10,6 +11,7 @@ export const drawFood = (
   const gridSize = gameState.gridSize();
   const camera = gameState.camera();
   const viewport = gameState.viewport();
+  const theme = gameState.mapTheme();
 
   // Enhanced food rendering for mobile - only draw visible food
   for (const item of food) {
@@ -25,18 +27,18 @@ export const drawFood = (
       const screenY = (item.y - camera.y) * gridSize + 2;
       const size = gridSize - 4;
 
-      if (item.type === "golden") {
+      if (item.type === FoodType.GOLDEN) {
         // Golden food with glow effect
         context.save();
-        context.shadowColor = "#F59E0B";
+        context.shadowColor = theme.foodGolden;
         context.shadowBlur = 8;
-        context.fillStyle = "#F59E0B";
+        context.fillStyle = theme.foodGolden;
         drawRoundedRect(context, screenX, screenY, size, size, size / 3);
         context.fill();
         context.restore();
       } else {
         // Regular food
-        context.fillStyle = "#EF4444";
+        context.fillStyle = theme.food;
         drawRoundedRect(context, screenX, screenY, size, size, size / 4);
         context.fill();
       }

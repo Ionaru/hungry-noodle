@@ -1,3 +1,4 @@
+import { FoodType } from "../food/types";
 import { GameState } from "../services/game-state";
 
 export const drawFoodDirectionIndicator = (
@@ -10,6 +11,7 @@ export const drawFoodDirectionIndicator = (
   const snake = gameState.snake();
   const camera = gameState.camera();
   const canvasSize = gameState.canvasSize();
+  const theme = gameState.mapTheme();
 
   if (food.length === 0 || snake.length === 0) return;
 
@@ -96,7 +98,8 @@ export const drawFoodDirectionIndicator = (
   context.fill();
 
   // Draw indicator circle
-  const foodColor = nearestFood.type === "golden" ? "#F59E0B" : "#EF4444";
+  const foodColor =
+    nearestFood.type === FoodType.GOLDEN ? theme.foodGolden : theme.food;
   context.fillStyle = foodColor;
   context.beginPath();
   context.arc(indicatorX, indicatorY, indicatorRadius, 0, Math.PI * 2);

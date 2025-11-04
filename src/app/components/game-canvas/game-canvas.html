@@ -6,7 +6,8 @@
     <div class="relative touch-none" #gestureContainer>
       <canvas
         #gameCanvas
-        class="border-primary pointer-events-none rounded-2xl border-4 bg-green-100 shadow-2xl"
+        [style.border-color]="mapBorderColor()"
+        class="pointer-events-none rounded-2xl border-4 bg-green-100 shadow-2xl"
         [width]="gameState.canvasWidth()"
         [height]="gameState.canvasHeight()"
       >
@@ -65,15 +66,6 @@
             class="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
           >
             @switch (gameState.gameStatus()) {
-              @case ("menu") {
-                <h2 class="mb-6 text-3xl font-bold">🐍 Ready to Play?</h2>
-                <button
-                  (click)="startGame()"
-                  class="w-full rounded-xl bg-green-600 py-4 text-lg font-semibold text-white transition-all duration-200 hover:scale-105 hover:bg-green-700 active:scale-95"
-                >
-                  Start Game
-                </button>
-              }
               @case ("paused") {
                 <h2 class="mb-6 text-3xl font-bold">Game Paused</h2>
                 <div class="space-y-3">

@@ -1,27 +1,20 @@
-import { Injectable, signal, computed, inject } from "@angular/core";
+import { Injectable, signal, computed, inject, effect } from "@angular/core";
+
+import { Food, FoodType } from "../food/types";
+import { MapState } from "../map/state";
+import { TerrainType, type MapConfig } from "../map/types";
+import { SnakeSegment } from "../snake/types";
 
 import { Progression } from "./progression";
 import { SavedGame } from "./storage/data";
 import { Store } from "./store";
-
-export interface SnakeSegment {
-  x: number; // Floating point position for smooth movement
-  y: number; // Floating point position for smooth movement
-}
-
-export interface Food {
-  x: number;
-  y: number;
-  type: "normal" | "golden" | "special";
-  value: number;
-}
 
 export interface Camera {
   x: number;
   y: number;
 }
 
-export type GameStatus = "menu" | "playing" | "paused" | "gameOver";
+export type GameStatus = "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
 
 interface SpeedConfig {
@@ -37,6 +30,7 @@ interface SpeedConfig {
 export class GameState {
   readonly progression = inject(Progression);
   readonly store = inject(Store);
+  readonly #map = inject(MapState);
 
   // Core game state signals
   readonly score = signal(0);
@@ -51,9 +45,9 @@ export class GameState {
   readonly canvasHeight = signal(480); // Will be updated dynamically
   readonly gridSize = signal(16); // Smaller grid for mobile
 
-  // World size - much larger than screen
-  readonly worldWidth = signal(80); // World width in grid units (80 * 16 = 1280px)
-  readonly worldHeight = signal(120); // World height in grid units (120 * 16 = 1920px)
+  // World size - synced from MapState
+  readonly worldWidth = signal(80); // grid units
+  readonly worldHeight = signal(120); // grid units
 
   // Camera/viewport system
   readonly camera = signal<Camera>({ x: 0, y: 0 }); // Current camera position in grid units
@@ -131,6 +125,23 @@ export class GameState {
     };
   });
 
+  // Map theme proxy for drawing
+  readonly mapTheme = computed(() => this.#map.mapData().theme);
+
+  constructor() {
+    // Sync world/grid from current map config
+    effect(() => {
+      const md = this.#map.mapData();
+      // keep grid size aligned with map for rendering/pixel math
+      if (this.gridSize() !== md.config.gridSize)
+        this.gridSize.set(md.config.gridSize);
+      if (this.worldWidth() !== md.config.width)
+        this.worldWidth.set(md.config.width);
+      if (this.worldHeight() !== md.config.height)
+        this.worldHeight.set(md.config.height);
+    });
+  }
+
   // Mobile-responsive canvas sizing
   updateCanvasSize(containerWidth: number, containerHeight: number): void {
     let newWidth = containerWidth;
@@ -154,6 +165,8 @@ export class GameState {
 
   // Game actions
   startGame(): void {
+    // TODO: Replace with actual map config
+    this.#map.init();
     this.initializeGame();
     this.gameStatus.set("playing");
   }
@@ -189,14 +202,6 @@ export class GameState {
     });
     // Clear saved game when game ends - no continues after game over
     this.store.clearSavedGame();
-  }
-
-  resetGame(): void {
-    this.score.set(0);
-    this.gameTime.set(0);
-    this.#headPath = []; // Reset path tracking
-    this.initializeGame();
-    this.gameStatus.set("menu");
   }
 
   changeDirection(newDirection: Direction): void {
@@ -628,7 +633,8 @@ export class GameState {
       this.#headPath.push({ ...initialSnake[index] });
     }
 
-    // Reset pending direction
+    // Reset direction
+    this.direction.set(null);
     this.#pendingDirection = null;
 
     this.updateCamera(); // Center camera on snake
@@ -641,8 +647,10 @@ export class GameState {
     const snake = this.snake();
 
     let foodPosition: { x: number; y: number };
+    const maxAttempts = 100; // Prevent infinite loops
+    let attempts = 0;
 
-    // Find empty position for food in the world
+    // Find good position for food in the world
     do {
       foodPosition = {
         // eslint-disable-next-line sonarjs/pseudo-random
@@ -650,12 +658,19 @@ export class GameState {
         // eslint-disable-next-line sonarjs/pseudo-random
         y: Math.floor(Math.random() * gridHeight),
       };
+      attempts++;
     } while (
-      snake.some(
-        (segment) =>
-          segment.x === foodPosition.x && segment.y === foodPosition.y,
-      )
+      attempts < maxAttempts &&
+      !this.isValidFoodPosition(foodPosition.x, foodPosition.y, snake)
     );
+
+    // If we couldn't find a valid position after many attempts, give up.
+    if (attempts >= maxAttempts) {
+      console.error(
+        "Failed to find a valid food position after many attempts.",
+      );
+      return;
+    }
 
     // Use cryptographically secure random for golden food chance
     const randomArray = new Uint32Array(1);
@@ -664,7 +679,7 @@ export class GameState {
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
-      type: isGolden ? "golden" : "normal",
+      type: isGolden ? FoodType.GOLDEN : FoodType.NORMAL,
       value: isGolden ? 5 : 1,
     };
 
@@ -676,10 +691,24 @@ export class GameState {
     }
   }
 
+  /**
+   * Will check if the given position is valid for a food item.
+   * Currently, it only checks if the position is not occupied by the snake.
+   * In the future, it will also check if the position is not blocked by obstacles.
+   */
+  private isValidFoodPosition(
+    x: number,
+    y: number,
+    snake: SnakeSegment[],
+  ): boolean {
+    // Check if snake is already there
+    return !snake.some((segment) => segment.x === x && segment.y === y);
+  }
+
   // Save/Load functionality
   toSavedGame(): SavedGame {
     return {
-      version: 1 as number,
+      version: 1,
       score: this.score(),
       snake: this.snake(),
       food: this.food(),
@@ -689,14 +718,27 @@ export class GameState {
       worldWidth: this.worldWidth(),
       worldHeight: this.worldHeight(),
       camera: this.camera(),
+      mapTerrainType: this.#map.mapData().config.terrainType,
     };
   }
 
   loadFromSavedGame(savedGame: SavedGame): void {
-    if (savedGame.version !== 1) {
-      throw new Error(
-        `Unsupported save version: ${savedGame.version.toString()}`,
-      );
+    // Backward/forward compatible load
+    let cfg: MapConfig | null = null;
+    if (savedGame.version === 1) {
+      cfg = {
+        width: savedGame.worldWidth,
+        height: savedGame.worldHeight,
+        gridSize: savedGame.gridSize,
+        terrainType: savedGame.mapTerrainType ?? TerrainType.CLASSIC,
+      };
+    }
+
+    if (cfg) {
+      this.#map.init(cfg);
+      this.gridSize.set(cfg.gridSize);
+      this.worldWidth.set(cfg.width);
+      this.worldHeight.set(cfg.height);
     }
 
     // Load all the basic state
@@ -708,14 +750,11 @@ export class GameState {
         x: f.x,
         y: f.y,
         value: f.value,
-        type: f.value > 1 ? "golden" : ("normal" as const),
+        type: f.type,
       })),
     );
     this.direction.set(savedGame.direction);
     this.gameTime.set(savedGame.gameTime);
-    this.gridSize.set(savedGame.gridSize);
-    this.worldWidth.set(savedGame.worldWidth);
-    this.worldHeight.set(savedGame.worldHeight);
     this.camera.set({ ...savedGame.camera });
 
     // Reset internal state that can't be safely serialized
