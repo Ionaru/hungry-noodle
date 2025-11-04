@@ -44,4 +44,5 @@ runs:
       run: |
         rm src-tauri/gen/android/upload-keystore.jks.base64
         rm src-tauri/gen/android/app/upload-keystore.jks
+        rm src-tauri/gen/android/key.properties
       shell: bash
