@@ -6,7 +6,7 @@ on:
       release_type:
         description: "Release type (major, minor, patch)"
         required: true
-        default: 'patch'
+        default: "patch"
         type: choice
         options:
           - major
