@@ -1,6 +1,7 @@
 export type Color = `#${string}`;
 
 export enum TerrainType {
+  CLASSIC = "CLASSIC",
   GRASSLANDS = "GRASSLANDS",
   FOREST = "FOREST",
   JUNGLE = "JUNGLE",

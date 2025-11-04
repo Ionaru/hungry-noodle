@@ -53,8 +53,9 @@ const getTileColor = (
   snake: SnakeSegment[],
   theme: MapTheme,
 ): Color => {
-  // Color occupied tiles a single color
+  // Color snake-occupied tiles a single color
   if (snake.length > 0) {
+    // Color the tiles under the snake body, not the head or tail.
     for (let index = 1; index < snake.length - 1; index++) {
       const segment = snake[index];
       const segmentX = Math.floor(segment.x);

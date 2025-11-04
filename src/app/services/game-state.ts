@@ -166,12 +166,7 @@ export class GameState {
   // Game actions
   startGame(): void {
     // TODO: Replace with actual map config
-    this.#map.init({
-      width: 80,
-      height: 120,
-      gridSize: 16,
-      terrainType: TerrainType.GRASSLANDS,
-    });
+    this.#map.init();
     this.initializeGame();
     this.gameStatus.set("playing");
   }
@@ -739,7 +734,7 @@ export class GameState {
         width: savedGame.worldWidth,
         height: savedGame.worldHeight,
         gridSize: savedGame.gridSize,
-        terrainType: TerrainType.GRASSLANDS,
+        terrainType: savedGame.mapTerrainType ?? TerrainType.CLASSIC,
       };
     }
 

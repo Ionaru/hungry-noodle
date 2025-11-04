@@ -1,9 +1,16 @@
 import { TerrainType, type MapTheme } from "./types";
 
 export const THEMES: Record<TerrainType, MapTheme> = {
+  [TerrainType.CLASSIC]: {
+    background: "#059670",
+    backgroundAlt: "#008236",
+    border: "#ffffff",
+    food: "#ef4444",
+    foodGolden: "#f59e0b",
+  },
   [TerrainType.GRASSLANDS]: {
-    background: "#6EB748",
-    backgroundAlt: "#8BC56D",
+    background: "#6eb748",
+    backgroundAlt: "#8bc56d",
     border: "#89b2ac",
     food: "#f59e0b",
     foodGolden: "#f59e0b",
