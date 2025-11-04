@@ -31,43 +31,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version: lts/*
-      - run: pnpm install --frozen-lockfile
-
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: zulu
-          java-version: ${{ env.JAVA_VERSION }}
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install NDK
-        run: sdkmanager "ndk;${{ env.NDK_VERSION }}"
-
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
-
-      - name: Extract android signing key from env
-        run: |
-          echo "${{ env.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/upload-keystore.jks.base64
-          base64 -d src-tauri/gen/android/upload-keystore.jks.base64 > src-tauri/gen/android/app/upload-keystore.jks
-
-      - name: Create key.properties
-        run: |
-          echo "keyAlias=upload" > src-tauri/gen/android/key.properties
-          echo "password=${{ env.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" >> src-tauri/gen/android/key.properties
-          echo "storeFile=upload-keystore.jks" >> src-tauri/gen/android/key.properties
-
-      - run: pnpm run build:android:prod
-        env:
-          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
+      - uses: ./.github/actions/setup-js
+      - uses: ./.github/actions/build
 
       - name: Configure git
         run: |
@@ -76,7 +41,9 @@ jobs:
 
       - name: Bump version in package.json
         run: |
-          echo "TAGGED_VERSION=$(npm version ${{ inputs.release_type }})" >> $GITHUB_ENV
+          set -e  # exit immediately if any command fails
+          TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
+          echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
 
       - name: Push commit
         run: git push origin HEAD:main --follow-tags
