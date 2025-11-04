@@ -24,9 +24,9 @@ export const drawBackgroundPattern = (
   context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
 
-  // Color the tiles under the snake body, not the head or tail.
+  // Color the tiles under the snake body (all segments except the head and tail).
   const occupiedTiles = new Set<`${string},${string}`>();
-  if (snake.length > 0) {
+  if (snake.length > 2) {
     for (let index = 1; index < snake.length - 1; index++) {
       const segment = snake[index];
       const segmentX = Math.floor(segment.x);
