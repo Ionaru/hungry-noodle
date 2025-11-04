@@ -46,3 +46,8 @@ runs:
         rm src-tauri/gen/android/app/upload-keystore.jks
         rm src-tauri/gen/android/key.properties
       shell: bash
+
+    - name: TEST git diff
+      run: |
+        git diff --name-only
+      shell: bash
