@@ -45,9 +45,5 @@ runs:
         rm src-tauri/gen/android/upload-keystore.jks.base64
         rm src-tauri/gen/android/app/upload-keystore.jks
         rm src-tauri/gen/android/key.properties
-      shell: bash
-
-    - name: TEST git diff
-      run: |
-        git diff --name-only
+        git checkout main -- src-tauri/gen/android/gradlew
       shell: bash
