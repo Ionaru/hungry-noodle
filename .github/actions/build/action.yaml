@@ -17,7 +17,7 @@ runs:
       run: sdkmanager "ndk;${{ env.NDK_VERSION }}"
       shell: bash
 
-    - name: install Rust stable
+    - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
         targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
