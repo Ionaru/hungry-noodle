@@ -43,19 +43,6 @@ jobs:
 
       - uses: ./.github/actions/setup-js
 
-      - name: Bump version in package.json
-        run: |
-          set -e  # exit immediately if any command fails
-          TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
-          echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
-
-      - uses: ./.github/actions/build
-
-      - name: Rename APK and AAB
-        run: |
-          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk src-tauri/gen/android/app/build/outputs/apk/universal/release/hungry-noodle-${{ env.TAGGED_VERSION }}.apk
-          cp src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab src-tauri/gen/android/app/build/outputs/bundle/universalRelease/hungry-noodle-${{ env.TAGGED_VERSION }}.aab
-
       - name: Get GitHub App User ID
         id: get-user-id
         run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
@@ -69,6 +56,19 @@ jobs:
           git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}
+
+      - name: Bump version in package.json
+        run: |
+          set -e  # exit immediately if any command fails
+          TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
+          echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
+
+      - uses: ./.github/actions/build
+
+      - name: Rename APK and AAB
+        run: |
+          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk src-tauri/gen/android/app/build/outputs/apk/universal/release/hungry-noodle-${{ env.TAGGED_VERSION }}.apk
+          cp src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab src-tauri/gen/android/app/build/outputs/bundle/universalRelease/hungry-noodle-${{ env.TAGGED_VERSION }}.aab
 
       - name: Push commit
         run: git push origin HEAD:main --follow-tags
