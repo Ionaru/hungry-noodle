@@ -90,7 +90,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
 
   // Snake head position in screen/canvas pixels
   readonly headScreenPosition = computed(() => {
-    const snake = this.#gameState.snake();
+    const snake = this.#gameState.snake.segments();
     if (snake.length === 0) return { x: -9999, y: -9999 };
     const head = snake[0];
     const gridSize = this.#gameState.gridSize();
@@ -182,7 +182,7 @@ export class GameCanvas implements AfterViewInit, OnDestroy {
     // Initialize a new game only when there is no active/paused game, or when the last game was over
     if (
       this.#gameState.gameStatus() === "gameOver" ||
-      this.#gameState.snake().length === 0
+      this.#gameState.snake.length() === 0
     ) {
       this.startGame();
     }

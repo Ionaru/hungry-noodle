@@ -8,15 +8,15 @@ export const drawFoodDirectionIndicator = (
   gameState: GameState,
 ) => {
   const food = gameState.food();
-  const snake = gameState.snake();
+  const snake = gameState.snake;
   const camera = gameState.camera();
   const canvasSize = gameState.canvasSize();
   const theme = gameState.mapTheme();
 
-  if (food.length === 0 || snake.length === 0) return;
+  if (food.length === 0 || snake.length() === 0) return;
 
   // Find the nearest food item
-  const snakeHead = snake[0];
+  const snakeHead = snake.segments()[0];
   let nearestFood = food[0];
   let nearestDistance = Number.POSITIVE_INFINITY;
 

@@ -12,6 +12,7 @@ export const drawWorldDecorations = (
   const gridSize = gameState.gridSize();
   const camera = gameState.camera();
   const viewport = gameState.viewport();
+  const snake = gameState.snake;
 
   context.save();
 
@@ -23,6 +24,11 @@ export const drawWorldDecorations = (
   // This ensures decorations stay in the same place as world scrolls
   for (let x = viewport.left; x < viewport.right; x++) {
     for (let y = viewport.top; y < viewport.bottom; y++) {
+      // Skip decorations that are underneath the snake
+      if (snake.occupiedTiles().has(`${x.toString()},${y.toString()}`)) {
+        continue;
+      }
+
       // Use deterministic pseudo-random based on coordinates
       const seed = x * 1000 + y;
       const random = pseudoRandom(seed);
