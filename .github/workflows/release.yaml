@@ -42,7 +42,6 @@ jobs:
           ref: main
 
       - uses: ./.github/actions/setup-js
-      - uses: ./.github/actions/build
 
       - name: Get GitHub App User ID
         id: get-user-id
@@ -64,13 +63,15 @@ jobs:
           TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
           echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
 
-      - name: Push commit
-        run: git push origin HEAD:main --follow-tags
+      - uses: ./.github/actions/build
 
       - name: Rename APK and AAB
         run: |
           cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk src-tauri/gen/android/app/build/outputs/apk/universal/release/hungry-noodle-${{ env.TAGGED_VERSION }}.apk
           cp src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab src-tauri/gen/android/app/build/outputs/bundle/universalRelease/hungry-noodle-${{ env.TAGGED_VERSION }}.aab
+
+      - name: Push commit
+        run: git push origin HEAD:main --follow-tags
 
       - name: Create release
         uses: softprops/action-gh-release@v2
