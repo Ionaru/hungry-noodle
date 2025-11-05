@@ -42,7 +42,19 @@ jobs:
           ref: main
 
       - uses: ./.github/actions/setup-js
+
+      - name: Bump version in package.json
+        run: |
+          set -e  # exit immediately if any command fails
+          TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
+          echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
+
       - uses: ./.github/actions/build
+
+      - name: Rename APK and AAB
+        run: |
+          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk src-tauri/gen/android/app/build/outputs/apk/universal/release/hungry-noodle-${{ env.TAGGED_VERSION }}.apk
+          cp src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab src-tauri/gen/android/app/build/outputs/bundle/universalRelease/hungry-noodle-${{ env.TAGGED_VERSION }}.aab
 
       - name: Get GitHub App User ID
         id: get-user-id
@@ -58,19 +70,8 @@ jobs:
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}
 
-      - name: Bump version in package.json
-        run: |
-          set -e  # exit immediately if any command fails
-          TAGGED_VERSION=$(npm version ${{ inputs.release_type }})
-          echo "TAGGED_VERSION=$TAGGED_VERSION" >> $GITHUB_ENV
-
       - name: Push commit
         run: git push origin HEAD:main --follow-tags
-
-      - name: Rename APK and AAB
-        run: |
-          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk src-tauri/gen/android/app/build/outputs/apk/universal/release/hungry-noodle-${{ env.TAGGED_VERSION }}.apk
-          cp src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab src-tauri/gen/android/app/build/outputs/bundle/universalRelease/hungry-noodle-${{ env.TAGGED_VERSION }}.aab
 
       - name: Create release
         uses: softprops/action-gh-release@v2
