@@ -45,5 +45,5 @@ runs:
         rm src-tauri/gen/android/upload-keystore.jks.base64
         rm src-tauri/gen/android/app/upload-keystore.jks
         rm src-tauri/gen/android/key.properties
-        git checkout origin/HEAD -- src-tauri/gen/android/gradlew
+        git checkout origin/main -- src-tauri/gen/android/gradlew
       shell: bash
