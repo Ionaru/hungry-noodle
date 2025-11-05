@@ -3,7 +3,7 @@
 An Android mobile game based on the classic Snake game, built with modern web technologies and compiled to native Android with Tauri.
 
 [![Download on Google Play](https://img.shields.io/badge/Download-Google%20Play-green?logo=google-play)](https://play.google.com/store/apps/details?id=com.ionaru.hungrynoodle)
-[![Version](https://img.shields.io/badge/version-0.3.5-blue.svg)](https://github.com/Ionaru/hungry-noodle)
+[![Version](https://img.shields.io/github/package-json/v/ionaru/hungry-noodle)](https://github.com/Ionaru/hungry-noodle)
 
 > **Note:** The app is currently in development. The Play Store link will be activated upon release.
 
