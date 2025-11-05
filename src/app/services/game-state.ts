@@ -3,6 +3,7 @@ import { Injectable, signal, computed, inject, effect } from "@angular/core";
 import { Food, FoodType } from "../food/types";
 import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
+import { Snake } from "../snake/snake";
 import { SnakeSegment } from "../snake/types";
 
 import { Progression } from "./progression";
@@ -34,7 +35,7 @@ export class GameState {
 
   // Core game state signals
   readonly score = signal(0);
-  readonly snake = signal<SnakeSegment[]>([]);
+  readonly snake = new Snake();
   readonly food = signal<Food[]>([]);
   readonly gameStatus = signal<GameStatus>("playing");
   readonly direction = signal<Direction | null>(null);
@@ -75,7 +76,6 @@ export class GameState {
   readonly foodEatenEvent = signal<Food | null>(null); // Emits when food is eaten
 
   // Game statistics
-  readonly currentLength = computed(() => this.snake().length);
   readonly highScore = computed(() => {
     return Math.max(this.progression.playerStats().highScore, this.score());
   });
@@ -180,7 +180,7 @@ export class GameState {
 
   // Explicit resume without reinitializing
   resume(): void {
-    if (this.gameStatus() !== "gameOver" && this.snake().length > 0) {
+    if (this.gameStatus() !== "gameOver" && this.snake.length() > 0) {
       this.gameStatus.set("playing");
     }
   }
@@ -196,7 +196,7 @@ export class GameState {
   endGame(): void {
     this.gameStatus.set("gameOver");
     this.progression.updateStats({
-      currentLength: this.currentLength(),
+      currentLength: this.snake.length(),
       currentScore: this.score(),
       playTime: this.gameTime(),
     });
@@ -251,8 +251,8 @@ export class GameState {
   }
 
   private moveSnakeContinuous(deltaTime: number): void {
-    const snake = this.snake();
-    if (snake.length === 0) return;
+    const snake = this.snake;
+    if (this.snake.length() === 0) return;
 
     const currentDirection = this.direction();
     const baseSpeed = this.movementSpeed();
@@ -288,7 +288,8 @@ export class GameState {
       }
     }
 
-    const head = snake[0];
+    const segments = snake.segments();
+    const head = segments[0];
     const newHeadX = head.x + deltaX;
     const newHeadY = head.y + deltaY;
 
@@ -319,7 +320,7 @@ export class GameState {
       this.#pendingDirection = null;
 
       // Snap head to exact grid position for clean turns
-      const newSnake = [...snake];
+      const newSnake = [...snake.segments()];
       newSnake[0] = { x: headGridX, y: headGridY };
 
       // Record this grid position in the path
@@ -336,12 +337,12 @@ export class GameState {
       // Update body segments with proper spacing
       this.updateBodySegments(newSnake, deltaTime);
 
-      this.snake.set(newSnake);
+      this.snake.segments.set(newSnake);
       return;
     }
 
     // Normal continuous movement
-    const newSnake = [...snake];
+    const newSnake = [...snake.segments()];
     newSnake[0] = { x: newHeadX, y: newHeadY };
 
     // Record head position for path tracking
@@ -364,7 +365,7 @@ export class GameState {
     // Update body segments with proper spacing
     this.updateBodySegments(newSnake, deltaTime);
 
-    this.snake.set(newSnake);
+    this.snake.segments.set(newSnake);
   }
 
   // Public controls for turbo
@@ -393,10 +394,10 @@ export class GameState {
 
   // Update target camera position based on snake head
   private updateTargetCamera(): void {
-    const snake = this.snake();
-    if (snake.length === 0) return;
+    const snake = this.snake;
+    if (snake.length() === 0) return;
 
-    const head = snake[0];
+    const head = snake.segments()[0];
     const canvasSize = this.canvasSize();
     const worldSize = this.worldSize();
 
@@ -587,10 +588,10 @@ export class GameState {
 
   // Legacy camera method for initial setup - immediately positions camera
   updateCamera(): void {
-    const snake = this.snake();
-    if (snake.length === 0) return;
+    const snake = this.snake;
+    if (snake.length() === 0) return;
 
-    const head = snake[0];
+    const head = snake.segments()[0];
     const canvasSize = this.canvasSize();
     const worldSize = this.worldSize();
 
@@ -625,7 +626,7 @@ export class GameState {
       { x: centerX, y: centerY },
     ];
 
-    this.snake.set(initialSnake);
+    this.snake.segments.set(initialSnake);
 
     // Initialize head path with the initial snake positions
     this.#headPath = [];
@@ -644,7 +645,7 @@ export class GameState {
   spawnFood(): void {
     const gridWidth = this.worldSize().gridWidth;
     const gridHeight = this.worldSize().gridHeight;
-    const snake = this.snake();
+    const snake = this.snake.segments();
 
     let foodPosition: { x: number; y: number };
     const maxAttempts = 100; // Prevent infinite loops
@@ -710,7 +711,7 @@ export class GameState {
     return {
       version: 1,
       score: this.score(),
-      snake: this.snake(),
+      snake: this.snake.segments(),
       food: this.food(),
       direction: this.direction(),
       gameTime: this.gameTime(),
@@ -743,7 +744,7 @@ export class GameState {
 
     // Load all the basic state
     this.score.set(savedGame.score);
-    this.snake.set([...savedGame.snake]);
+    this.snake.segments.set([...savedGame.snake]);
     // Convert saved food format to full Food objects
     this.food.set(
       savedGame.food.map((f) => ({

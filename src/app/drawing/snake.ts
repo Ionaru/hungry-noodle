@@ -6,7 +6,7 @@ export const drawSnake = (
   context: CanvasRenderingContext2D,
   gameState: GameState,
 ) => {
-  const snake = gameState.snake();
+  const snake = gameState.snake;
   const gridSize = gameState.gridSize();
   const camera = gameState.camera();
   const viewport = gameState.viewport();
@@ -15,10 +15,10 @@ export const drawSnake = (
   context.save();
 
   // Draw snake body first (batch all body segments that are visible)
-  if (snake.length > 1) {
-    for (let index = 1; index < snake.length; index++) {
+  if (snake.length() > 1) {
+    for (let index = 1; index < snake.length(); index++) {
       context.fillStyle = index % 2 === 0 ? "#374151" : "#4c596f";
-      const segment = snake[index];
+      const segment = snake.segments()[index];
 
       // Check if segment is within viewport (with some margin for smooth positions)
       if (
@@ -37,8 +37,8 @@ export const drawSnake = (
   }
 
   // Draw head separately with different color and rounding for better mobile look
-  if (snake.length > 0) {
-    const head = snake[0];
+  if (snake.length() > 0) {
+    const head = snake.segments()[0];
     context.fillStyle = "#1F2937";
 
     // Convert smooth world coordinates to screen coordinates

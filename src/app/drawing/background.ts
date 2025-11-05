@@ -11,7 +11,7 @@ export const drawBackgroundPattern = (
   const camera = gameState.camera();
   const viewport = gameState.viewport();
   const theme = gameState.mapTheme();
-  const snake = gameState.snake();
+  const snake = gameState.snake;
 
   // Create alternating tile pattern for visual movement feedback
   context.save();
@@ -23,22 +23,6 @@ export const drawBackgroundPattern = (
   // Fill the entire canvas with the background color first to prevent gaps
   context.fillStyle = theme.background;
   context.fillRect(0, 0, width, height);
-
-  // Color the tiles under the snake body (all segments except the head and tail).
-  const occupiedTiles = new Set<`${string},${string}`>();
-  if (snake.length > 2) {
-    for (let index = 1; index < snake.length - 1; index++) {
-      const segment = snake[index];
-      const segmentX = Math.floor(segment.x);
-      const segmentY = Math.floor(segment.y);
-      occupiedTiles.add(`${segmentX.toString()},${segmentY.toString()}`);
-      const segmentXNext = Math.ceil(segment.x);
-      const segmentYNext = Math.ceil(segment.y);
-      occupiedTiles.add(
-        `${segmentXNext.toString()},${segmentYNext.toString()}`,
-      );
-    }
-  }
 
   // Then draw the checkerboard pattern over it
   for (let x = viewport.left; x < viewport.right; x++) {
@@ -54,7 +38,7 @@ export const drawBackgroundPattern = (
         screenX > -gridSize &&
         screenY > -gridSize
       ) {
-        context.fillStyle = getTileColor(x, y, occupiedTiles, theme);
+        context.fillStyle = getTileColor(x, y, snake.occupiedTiles(), theme);
         context.fillRect(screenX, screenY, gridSize, gridSize);
       }
     }
