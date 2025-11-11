@@ -1,4 +1,4 @@
-import { Component, inject, computed } from "@angular/core";
+import { Component, inject, computed, OnDestroy, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   faCartShopping,
@@ -15,6 +15,8 @@ import {
 } from "@fortawesome/angular-fontawesome";
 
 import packageJson from "../../../../package.json";
+import { AudioService } from "../../audio/audio.service";
+import { MusicService } from "../../audio/music.service";
 import { Progression } from "../../services/progression";
 import { Store } from "../../services/store";
 import { FluidContainer } from "../containers/fluid-container";
@@ -99,10 +101,12 @@ interface MenuOption {
   `,
   imports: [FaIconComponent, FluidContainer],
 })
-export class MainMenu {
+export class MainMenu implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly progression = inject(Progression);
   readonly #store = inject(Store);
+  private readonly audio = inject(AudioService);
+  private readonly music = inject(MusicService);
 
   // Game state signals
   readonly highScore = computed(() => this.progression.playerStats().highScore);
@@ -176,12 +180,25 @@ export class MainMenu {
   handleMenuClick(option: MenuOption): void {
     if (option.disabled) return;
 
-    if (option.route) {
-      void this.router.navigate([option.route]);
-    } else if (option.action) {
-      option.action();
-    }
+    void (async () => {
+      if (!option.route && option.action) option.action();
+      if (option.route) {
+        await this.router.navigate([option.route]);
+      }
+    })();
   }
 
   protected readonly faCoins = faCircle;
+
+  ngOnInit(): void {
+    this.music.playMenu();
+  }
+
+  ngOnDestroy(): void {
+    this.music.stopMenu();
+  }
+
+  resumeAudio(): void {
+    void this.audio.audioContext().resume();
+  }
 }

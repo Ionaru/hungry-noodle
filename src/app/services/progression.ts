@@ -168,7 +168,7 @@ export class Progression {
       "tiny-world": 8,
     };
 
-    return level >= (mapRequirements[mapId] || 1);
+    return level >= (mapRequirements[mapId] ?? 1);
   }
 
   // Private helper methods
