@@ -10,7 +10,7 @@ export enum InstrumentType {
 }
 
 export class InstrumentBank {
-  private instruments = new Map<
+  readonly #instruments = new Map<
     InstrumentType,
     Tone.PolySynth | Tone.MembraneSynth
   >();
@@ -20,20 +20,20 @@ export class InstrumentBank {
   init(): void {
     const musicOut = this.audioService.getMusicOutput();
 
-    // Lead: Square wave for classic chiptune sound
+    // Lead: Triangle wave for softer melody
     const lead = new Tone.PolySynth(Tone.Synth, {
       oscillator: {
-        type: "square",
+        type: "triangle",
       },
       envelope: {
-        attack: 0.01,
+        attack: 0.02,
         decay: 0.1,
         sustain: 0.5,
         release: 0.1,
       },
     }).connect(musicOut);
-    lead.volume.value = -6; // Adjust mix
-    this.instruments.set(InstrumentType.Lead, lead);
+    lead.volume.value = -10; // Quieter mix
+    this.#instruments.set(InstrumentType.Lead, lead);
 
     // Bass: Triangle wave for deeper sound
     const bass = new Tone.PolySynth(Tone.Synth, {
@@ -48,7 +48,7 @@ export class InstrumentBank {
       },
     }).connect(musicOut);
     bass.volume.value = -3;
-    this.instruments.set(InstrumentType.Bass, bass);
+    this.#instruments.set(InstrumentType.Bass, bass);
 
     // Chords: Sawtooth for richer texture
     const chords = new Tone.PolySynth(Tone.Synth, {
@@ -63,7 +63,7 @@ export class InstrumentBank {
       },
     }).connect(musicOut);
     chords.volume.value = -10;
-    this.instruments.set(InstrumentType.Chords, chords);
+    this.#instruments.set(InstrumentType.Chords, chords);
 
     // Drums: Membrane synth for kicks/toms (simple percussion)
     // Note: For a full drum kit, we might need a sampler or multiple synths,
@@ -83,15 +83,15 @@ export class InstrumentBank {
         release: 1.4,
       },
     }).connect(musicOut);
-    this.instruments.set(InstrumentType.Drum, drum);
+    this.#instruments.set(InstrumentType.Drum, drum);
   }
 
   get(type: InstrumentType): Tone.PolySynth | Tone.MembraneSynth | undefined {
-    return this.instruments.get(type);
+    return this.#instruments.get(type);
   }
 
   releaseAll(): void {
-    for (const inst of this.instruments) {
+    for (const inst of this.#instruments.values()) {
       if (inst instanceof Tone.PolySynth) {
         inst.releaseAll();
       }

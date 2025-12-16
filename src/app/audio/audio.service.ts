@@ -149,7 +149,6 @@ export class AudioService {
     if (!this.isInitialized()) return;
     Tone.getTransport().stop();
     for (const part of this.currentParts) {
-      part.stop();
       part.dispose();
     }
     this.currentParts = [];

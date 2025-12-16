@@ -144,6 +144,25 @@ export class GameState {
       if (this.worldHeight() !== md.config.height)
         this.worldHeight.set(md.config.height);
     });
+
+    effect(() => {
+      switch (this.gameStatus()) {
+        case "playing": {
+          this.#audio.playMusic(this.#map.mapData().config.terrainType);
+          break;
+        }
+        case "paused": {
+          this.#audio.stopMusic();
+          break;
+        }
+        case "gameOver": {
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
   }
 
   // Mobile-responsive canvas sizing
@@ -791,5 +810,8 @@ export class GameState {
     this.#postTurboSlowRemainingMs = 0;
     this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
+
+    // Resume music for the current terrain
+    this.#audio.playMusic(this.#map.mapData().config.terrainType);
   }
 }
