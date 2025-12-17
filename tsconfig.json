@@ -8,7 +8,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
