@@ -14,6 +14,7 @@
     "fix:style": "stylelint \"**/*.{css,scss}\" --fix",
     "fix:format": "prettier --write .",
     "fix:lint": "ng lint --fix",
+    "test": "ng test --watch=false",
     "build:android:prod:apk": "tauri android build --apk --target aarch64",
     "build:android:prod": "tauri android build",
     "tauri": "tauri"

@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-js
-      - run: pnpm run test
+      - run: pnpm test
 
   build:
     name: Build
