@@ -2,7 +2,12 @@ import { computed, inject, Injectable, resource } from "@angular/core";
 
 import { PERSISTANT_STORAGE } from "../app.tokens";
 
-import { HungryStore, StoreKey, SavedGame } from "./storage/data";
+import {
+  HungryStore,
+  StoreKey,
+  SavedGame,
+  AudioSettings,
+} from "./storage/data";
 
 @Injectable({
   providedIn: "root",
@@ -44,6 +49,18 @@ export class Store {
   readonly savedGame = computed(
     () => this.#store.value()?.[StoreKey.SavedGame],
   );
+  readonly audioSettings = computed(() => {
+    const settings = this.#store.value()?.[StoreKey.AudioSettings];
+    if (settings) return settings;
+
+    // Default settings
+    return {
+      masterVolume: 0.5,
+      musicVolume: 0.7,
+      sfxVolume: 0.8,
+      muted: false,
+    };
+  });
 
   write(key: StoreKey, value: HungryStore[StoreKey]): void {
     this.#store.update((state) => ({ ...state, [key]: value }));
@@ -56,5 +73,9 @@ export class Store {
 
   clearSavedGame(): void {
     this.writeSavedGame(null);
+  }
+
+  writeAudioSettings(settings: AudioSettings): void {
+    this.write(StoreKey.AudioSettings, settings);
   }
 }

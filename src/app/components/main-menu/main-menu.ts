@@ -1,4 +1,4 @@
-import { Component, inject, computed } from "@angular/core";
+import { Component, inject, computed, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   faCartShopping,
@@ -15,6 +15,8 @@ import {
 } from "@fortawesome/angular-fontawesome";
 
 import packageJson from "../../../../package.json";
+import { AudioService } from "../../audio/audio.service";
+import { SfxType } from "../../audio/sfx";
 import { Progression } from "../../services/progression";
 import { Store } from "../../services/store";
 import { FluidContainer } from "../containers/fluid-container";
@@ -92,17 +94,28 @@ interface MenuOption {
           }
         </div>
 
-        <!-- Version Info -->
-        <div class="mt-4 text-sm text-black/60">v{{ version }}</div>
+        <!-- Version Info & Mute Toggle -->
+        <div class="mt-4 flex items-center gap-4 text-sm text-black/60">
+          <span>v{{ version }}</span>
+          <span>|</span>
+          <button
+            (click)="toggleMute()"
+            class="flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 hover:bg-white/30"
+          >
+            <fa-icon [icon]="isMuted() ? faVolumeMute : faVolumeHigh"></fa-icon>
+            {{ isMuted() ? "Muted" : "On" }}
+          </button>
+        </div>
       </div>
     </app-fluid-container>
   `,
   imports: [FaIconComponent, FluidContainer],
 })
-export class MainMenu {
+export class MainMenu implements OnInit {
   private readonly router = inject(Router);
   private readonly progression = inject(Progression);
   readonly #store = inject(Store);
+  readonly #audio = inject(AudioService);
 
   // Game state signals
   readonly highScore = computed(() => this.progression.playerStats().highScore);
@@ -110,6 +123,11 @@ export class MainMenu {
     () => this.progression.playerStats().totalScore,
   );
   readonly version = packageJson.version;
+
+  // Audio state
+  readonly isMuted = computed(() => this.#store.audioSettings().muted);
+  protected readonly faVolumeHigh = faCircle; // Fallback icon
+  protected readonly faVolumeMute = faCircle; // Fallback icon
 
   // Computed for saved game info display
   readonly savedGameInfo = computed(() => {
@@ -173,14 +191,25 @@ export class MainMenu {
     ];
   });
 
+  ngOnInit(): void {
+    // Play menu music when entering the main menu
+    this.#audio.playMusic("menu");
+  }
+
   handleMenuClick(option: MenuOption): void {
     if (option.disabled) return;
 
     if (option.route) {
+      // Sfx for click
+      this.#audio.playSfx(SfxType.UiClick);
       void this.router.navigate([option.route]);
     } else if (option.action) {
       option.action();
     }
+  }
+
+  toggleMute(): void {
+    this.#audio.toggleMute();
   }
 
   protected readonly faCoins = faCircle;
