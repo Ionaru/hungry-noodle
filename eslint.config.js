@@ -2,22 +2,22 @@
 const eslint = require("@eslint/js");
 const typescriptEslint = require("typescript-eslint");
 const angularEslint = require("angular-eslint");
-
+const { defineConfig } = require("eslint/config");
 const eslintConfigPrettier = require("eslint-config-prettier");
 const eslintConfigUnicorn = require("eslint-plugin-unicorn");
 const eslintPluginImport = require("eslint-plugin-import");
 const eslintPluginSonarJS = require("eslint-plugin-sonarjs");
 
-module.exports = typescriptEslint.config(
+module.exports = defineConfig(
   {
     files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.mts"],
     extends: [
       eslint.configs.recommended,
       eslintPluginImport.flatConfigs.recommended,
       eslintPluginImport.flatConfigs.typescript,
-      ...typescriptEslint.configs.strictTypeChecked,
-      ...typescriptEslint.configs.stylisticTypeChecked,
-      ...angularEslint.configs.tsRecommended,
+      typescriptEslint.configs.strictTypeChecked,
+      typescriptEslint.configs.stylisticTypeChecked,
+      angularEslint.configs.tsRecommended,
       eslintPluginSonarJS.configs.recommended,
       eslintConfigUnicorn.default.configs.recommended,
       eslintConfigPrettier,
@@ -95,8 +95,8 @@ module.exports = typescriptEslint.config(
   {
     files: ["**/*.html"],
     extends: [
-      ...angularEslint.configs.templateRecommended,
-      ...angularEslint.configs.templateAccessibility,
+      angularEslint.configs.templateRecommended,
+      angularEslint.configs.templateAccessibility,
     ],
     rules: {},
   },

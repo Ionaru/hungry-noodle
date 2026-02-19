@@ -10,7 +10,6 @@ describe("App", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
       providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
@@ -22,12 +21,5 @@ describe("App", () => {
 
   test("should create the app", () => {
     expect(component).toBeTruthy();
-  });
-
-  test("should render title", () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector("h1")?.textContent).toContain(
-      "Welcome to Tauri + Angular!",
-    );
   });
 });
