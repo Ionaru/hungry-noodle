@@ -62,7 +62,8 @@ export class AudioService {
   }
 
   #applySettings(settings: AudioSettings): void {
-    if (!this.#masterChannel || !this.#musicChannel || !this.#sfxChannel) return;
+    if (!this.#masterChannel || !this.#musicChannel || !this.#sfxChannel)
+      return;
 
     const masterDatabase = settings.muted
       ? -Infinity
