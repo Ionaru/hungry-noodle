@@ -31,9 +31,18 @@ jobs:
       - uses: ./.github/actions/setup-js
       - run: pnpm run check
 
+  test:
+    name: Test
+    needs: audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-js
+      - run: pnpm test
+
   build:
     name: Build
-    needs: check
+    needs: [check, test]
     runs-on: ubuntu-latest
     permissions:
       contents: write
