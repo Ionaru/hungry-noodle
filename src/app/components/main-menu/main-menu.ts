@@ -8,6 +8,8 @@ import {
   faSignalBars,
   faSliders,
   faStar,
+  faVolume,
+  faVolumeSlash,
 } from "@awesome.me/kit-fa99832706/icons/slab/regular";
 import {
   FaIconComponent,
@@ -103,7 +105,7 @@ interface MenuOption {
             class="flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 hover:bg-white/30"
           >
             <fa-icon [icon]="isMuted() ? faVolumeMute : faVolumeHigh"></fa-icon>
-            {{ isMuted() ? "Muted" : "On" }}
+            Sound {{ isMuted() ? "muted" : "on" }}
           </button>
         </div>
       </div>
@@ -126,8 +128,8 @@ export class MainMenu implements OnInit {
 
   // Audio state
   readonly isMuted = computed(() => this.#store.audioSettings().muted);
-  protected readonly faVolumeHigh = faCircle; // Fallback icon
-  protected readonly faVolumeMute = faCircle; // Fallback icon
+  protected readonly faVolumeHigh = faVolume; // Fallback icon
+  protected readonly faVolumeMute = faVolumeSlash; // Fallback icon
 
   // Computed for saved game info display
   readonly savedGameInfo = computed(() => {

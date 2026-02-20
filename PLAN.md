@@ -65,8 +65,8 @@ export class GameState {
 // Currency & Progression using Resource API
 @Injectable()
 export class Progression {
-  private noodleCoins = signal(0);
-  private unlockedMaps = signal<string[]>(["classic"]);
+  #noodleCoins = signal(0);
+  #unlockedMaps = signal<string[]>(["classic"]);
 
   // Resource for server sync when online
   leaderboard = resource({
@@ -270,7 +270,7 @@ export class Analytics {
 @Injectable()
 export class DataSync {
   // Offline-first approach
-  private offlineData = signal({
+  #offlineData = signal({
     highScores: [],
     unlockedContent: [],
     cosmetics: [],
@@ -389,10 +389,10 @@ export class TouchControls {
 // Prepare for future localization
 @Injectable()
 export class Localization {
-  private currentLang = signal("en");
+  #currentLang = signal("en");
 
   // Text resources structure
-  private texts = {
+  #texts = {
     en: {
       menu: {
         play: "Play",

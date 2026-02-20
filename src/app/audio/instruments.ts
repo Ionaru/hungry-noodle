@@ -15,7 +15,7 @@ export class InstrumentBank {
     Tone.PolySynth | Tone.MembraneSynth
   >();
 
-  constructor(private audioService: AudioService) {}
+  constructor(private readonly audioService: AudioService) {}
 
   init(): void {
     const musicOut = this.audioService.getMusicOutput();

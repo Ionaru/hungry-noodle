@@ -9,17 +9,17 @@ import { AudioService } from "./audio/audio.service";
   template: `<router-outlet />`,
 })
 export class App implements OnInit {
-  private readonly audio = inject(AudioService);
+  readonly #audio = inject(AudioService);
 
   ngOnInit(): void {
     // Initialize audio system
     // In a browser, this might remain suspended until user interaction
     // In Tauri/WebView, it might work immediately
-    void this.audio.init();
+    void this.#audio.init();
 
     // Fallback: Unlock audio on first interaction
     const unlockAudio = async () => {
-      await this.audio.init();
+      await this.#audio.init();
       document.removeEventListener("click", unlockAudio);
       document.removeEventListener("touchstart", unlockAudio);
     };
