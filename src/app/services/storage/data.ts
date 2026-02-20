@@ -12,6 +12,14 @@ export enum StoreKey {
   NoodleCoins = "noodleCoins",
   GoldenNoodles = "goldenNoodles",
   SavedGame = "savedGame",
+  AudioSettings = "audioSettings",
+}
+
+export interface AudioSettings {
+  masterVolume: number; // 0 to 1
+  musicVolume: number; // 0 to 1
+  sfxVolume: number; // 0 to 1
+  muted: boolean;
 }
 
 export interface SavedGame {
@@ -38,4 +46,5 @@ export interface HungryStore {
   [StoreKey.NoodleCoins]?: number;
   [StoreKey.GoldenNoodles]?: number;
   [StoreKey.SavedGame]?: SavedGame | null;
+  [StoreKey.AudioSettings]?: AudioSettings;
 }

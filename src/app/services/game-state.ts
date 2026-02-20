@@ -1,5 +1,7 @@
 import { Injectable, signal, computed, inject, effect } from "@angular/core";
 
+import { AudioService } from "../audio/audio.service";
+import { SfxType } from "../audio/sfx";
 import { Food, FoodType } from "../food/types";
 import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
@@ -32,6 +34,7 @@ export class GameState {
   readonly progression = inject(Progression);
   readonly store = inject(Store);
   readonly #map = inject(MapState);
+  readonly #audio = inject(AudioService);
 
   // Core game state signals
   readonly score = signal(0);
@@ -58,6 +61,7 @@ export class GameState {
   // Smooth continuous movement
   readonly movementSpeed = signal(4); // Grid units per second
   #pendingDirection: Direction | null = null; // Direction to change to at next grid position
+  #lastGridPosition = { x: 0, y: 0 }; // To track movement for SFX
 
   // Speed/turbo system
   #turboActive = false;
@@ -140,6 +144,25 @@ export class GameState {
       if (this.worldHeight() !== md.config.height)
         this.worldHeight.set(md.config.height);
     });
+
+    effect(() => {
+      switch (this.gameStatus()) {
+        case "playing": {
+          this.#audio.playMusic(this.#map.mapData().config.terrainType);
+          break;
+        }
+        case "paused": {
+          this.#audio.stopMusic();
+          break;
+        }
+        case "gameOver": {
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
   }
 
   // Mobile-responsive canvas sizing
@@ -169,6 +192,7 @@ export class GameState {
     this.#map.init();
     this.initializeGame();
     this.gameStatus.set("playing");
+    this.#audio.playMusic(this.#map.mapData().config.terrainType);
   }
 
   // Explicit pause without toggle semantics
@@ -202,6 +226,7 @@ export class GameState {
     });
     // Clear saved game when game ends - no continues after game over
     this.store.clearSavedGame();
+    this.#audio.playSfx(SfxType.GameOver);
   }
 
   changeDirection(newDirection: Direction): void {
@@ -308,6 +333,17 @@ export class GameState {
     // Check if head has reached a grid position and handle direction change
     const headGridX = Math.round(newHeadX);
     const headGridY = Math.round(newHeadY);
+
+    // Check for grid step sound
+    if (
+      headGridX !== this.#lastGridPosition.x ||
+      headGridY !== this.#lastGridPosition.y
+    ) {
+      if (this.direction()) {
+        this.#audio.playSfx(SfxType.Move);
+      }
+      this.#lastGridPosition = { x: headGridX, y: headGridY };
+    }
 
     // If head is very close to a grid position and we have a pending direction change
     if (
@@ -467,6 +503,12 @@ export class GameState {
         currentPosition.y - previousPosition.y,
       );
 
+      // Handle potential very small distances to avoid NaNs if ratio calculation goes wrong
+      if (segmentDistance < 0.001) {
+        previousPosition = currentPosition;
+        continue;
+      }
+
       if (accumulatedDistance + segmentDistance >= targetDistance) {
         // Target distance is within this segment
         const remainingDistance = targetDistance - accumulatedDistance;
@@ -509,6 +551,9 @@ export class GameState {
         this.updateScore(foodItem.value);
         this.spawnFood();
         this.foodEatenEvent.set(foodItem); // Emit event for UI updates
+        this.#audio.playSfx(
+          foodItem.type === FoodType.GOLDEN ? SfxType.EatGolden : SfxType.Eat,
+        );
         return true; // Indicate that food was consumed
       }
     }
@@ -637,6 +682,7 @@ export class GameState {
     // Reset direction
     this.direction.set(null);
     this.#pendingDirection = null;
+    this.#lastGridPosition = { x: centerX, y: centerY }; // Initialize grid tracking
 
     this.updateCamera(); // Center camera on snake
     this.spawnFood();
@@ -764,5 +810,8 @@ export class GameState {
     this.#postTurboSlowRemainingMs = 0;
     this.#headPath = [...savedGame.snake];
     this.#targetCamera = { ...savedGame.camera };
+
+    // Resume music for the current terrain
+    this.#audio.playMusic(this.#map.mapData().config.terrainType);
   }
 }

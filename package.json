@@ -8,11 +8,11 @@
     "watch": "ng build --watch --configuration development",
     "check": "pnpm run check:format && pnpm run check:style && pnpm run check:lint && echo ✅",
     "check:style": "stylelint \"**/*.{css,scss}\"",
-    "check:format": "prettier --check .",
+    "check:format": "prettier --check --cache .",
     "check:lint": "ng lint",
     "fix": "pnpm fix:format && pnpm fix:style && pnpm fix:lint && echo ✨",
     "fix:style": "stylelint \"**/*.{css,scss}\" --fix",
-    "fix:format": "prettier --write .",
+    "fix:format": "prettier --write --cache .",
     "fix:lint": "ng lint --fix",
     "test": "ng test --watch=false",
     "build:android:prod:apk": "tauri android build --apk --target aarch64",
@@ -37,6 +37,7 @@
     "postcss": "^8.5.6",
     "rxjs": "~7.8.2",
     "tailwindcss": "^4.2.0",
+    "tone": "^15.1.22",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
