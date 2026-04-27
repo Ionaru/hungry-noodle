@@ -18,9 +18,7 @@ export class Store {
   readonly #store = resource<HungryStore, null>({
     loader: async () => {
       await this.#persistantStorage.init();
-      return Object.fromEntries(
-        await this.#persistantStorage.entries(),
-      );
+      return Object.fromEntries(await this.#persistantStorage.entries());
     },
   });
 
