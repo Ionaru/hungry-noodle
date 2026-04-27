@@ -7,6 +7,7 @@ import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
 import { Snake } from "../snake/snake";
 import { SnakeSegment } from "../snake/types";
+import { secureRandom } from "../utils/random";
 
 import { Progression } from "./progression";
 import { SavedGame } from "./storage/data";
@@ -20,13 +21,14 @@ export interface Camera {
 export type GameStatus = "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
 
-const FOOD_SOFT_CAP = 3;
-const FOOD_HARD_CAP = 5;
+const FOOD_SOFT_CAP = 4;
+const FOOD_HARD_CAP = 10;
 const FOOD_SKIP_CHANCE = 0.5;
-const FOOD_BONUS_CHANCE = 0.35;
+const FOOD_BONUS_CHANCE = 0.5;
 const FOOD_MIN_DISTANCE_FROM_HEAD = 3;
 const FOOD_MAX_SPAWN_ATTEMPTS = 100;
-const GOLDEN_FOOD_CHANCE = 0.1;
+const GOLDEN_FOOD_CHANCE = 0.05;
+const FOOD_SNAKE_OCCUPANCY_RADIUS = 0.5;
 
 interface SpeedConfig {
   normalMultiplier: number;
@@ -702,6 +704,13 @@ export class GameState {
       return;
     }
 
+    if (
+      currentFood.length >= FOOD_SOFT_CAP &&
+      secureRandom() < FOOD_SKIP_CHANCE
+    ) {
+      return;
+    }
+
     const snake = this.snake.segments();
     const foodPosition = this.findFoodPosition(snake, currentFood);
     if (!foodPosition) {
@@ -728,17 +737,14 @@ export class GameState {
     existingFood: Food[],
   ): { x: number; y: number } | null {
     const viewport = this.viewport();
-    const head = snake.length > 0 ? snake[0] : null;
 
     for (let attempt = 0; attempt < FOOD_MAX_SPAWN_ATTEMPTS; attempt++) {
       const candidate = {
-        // eslint-disable-next-line sonarjs/pseudo-random
         x: Math.floor(
-          Math.random() * (viewport.right - viewport.left) + viewport.left,
+          secureRandom() * (viewport.right - viewport.left) + viewport.left,
         ),
-        // eslint-disable-next-line sonarjs/pseudo-random
         y: Math.floor(
-          Math.random() * (viewport.bottom - viewport.top) + viewport.top,
+          secureRandom() * (viewport.bottom - viewport.top) + viewport.top,
         ),
       };
       if (
@@ -747,7 +753,6 @@ export class GameState {
           candidate.y,
           snake,
           existingFood,
-          head,
         )
       ) {
         return candidate;
@@ -760,10 +765,8 @@ export class GameState {
     const gridHeight = this.worldSize().gridHeight;
     for (let attempt = 0; attempt < FOOD_MAX_SPAWN_ATTEMPTS; attempt++) {
       const candidate = {
-        // eslint-disable-next-line sonarjs/pseudo-random
-        x: Math.floor(Math.random() * gridWidth),
-        // eslint-disable-next-line sonarjs/pseudo-random
-        y: Math.floor(Math.random() * gridHeight),
+        x: Math.floor(secureRandom() * gridWidth),
+        y: Math.floor(secureRandom() * gridHeight),
       };
       if (
         this.isValidFoodPosition(candidate.x, candidate.y, snake) &&
@@ -781,16 +784,10 @@ export class GameState {
   }
 
   private maybeSpawnBonusFood(): void {
-    // eslint-disable-next-line sonarjs/pseudo-random
-    if (Math.random() >= FOOD_BONUS_CHANCE) {
+    if (secureRandom() >= FOOD_BONUS_CHANCE) {
       return;
     }
-    if (this.food().length >= FOOD_SOFT_CAP) {
-      // eslint-disable-next-line sonarjs/pseudo-random
-      if (Math.random() < FOOD_SKIP_CHANCE) {
-        return;
-      }
-    }
+
     this.spawnFood();
   }
 
@@ -805,7 +802,10 @@ export class GameState {
     snake: SnakeSegment[],
   ): boolean {
     // Check if snake is already there
-    return !snake.some((segment) => segment.x === x && segment.y === y);
+    return !snake.some(
+      (segment) =>
+        Math.hypot(segment.x - x, segment.y - y) <= FOOD_SNAKE_OCCUPANCY_RADIUS,
+    );
   }
 
   private isValidFoodPositionInViewport(
@@ -813,7 +813,6 @@ export class GameState {
     y: number,
     snake: SnakeSegment[],
     existingFood: Food[],
-    head: SnakeSegment | null,
   ): boolean {
     if (!this.isValidFoodPosition(x, y, snake)) {
       return false;
@@ -821,6 +820,7 @@ export class GameState {
     if (existingFood.some((f) => f.x === x && f.y === y)) {
       return false;
     }
+    const head = snake.length > 0 ? snake[0] : null;
     if (
       head &&
       Math.hypot(x - head.x, y - head.y) < FOOD_MIN_DISTANCE_FROM_HEAD
