@@ -821,7 +821,10 @@ export class GameState {
     if (existingFood.some((f) => f.x === x && f.y === y)) {
       return false;
     }
-    if (head && Math.hypot(x - head.x, y - head.y) < FOOD_MIN_DISTANCE_FROM_HEAD) {
+    if (
+      head &&
+      Math.hypot(x - head.x, y - head.y) < FOOD_MIN_DISTANCE_FROM_HEAD
+    ) {
       return false;
     }
     return true;
