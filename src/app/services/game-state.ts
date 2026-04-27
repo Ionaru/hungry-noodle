@@ -7,6 +7,7 @@ import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
 import { Snake } from "../snake/snake";
 import { SnakeSegment } from "../snake/types";
+import { secureRandom } from "../utils/random";
 
 import { Progression } from "./progression";
 import { SavedGame } from "./storage/data";
@@ -19,6 +20,15 @@ export interface Camera {
 
 export type GameStatus = "playing" | "paused" | "gameOver";
 export type Direction = "up" | "down" | "left" | "right";
+
+const FOOD_SOFT_CAP = 4;
+const FOOD_HARD_CAP = 10;
+const FOOD_SKIP_CHANCE = 0.5;
+const FOOD_BONUS_CHANCE = 0.5;
+const FOOD_MIN_DISTANCE_FROM_HEAD = 3;
+const FOOD_MAX_SPAWN_ATTEMPTS = 100;
+const GOLDEN_FOOD_CHANCE = 0.05;
+const FOOD_SNAKE_OCCUPANCY_RADIUS = 0.5;
 
 interface SpeedConfig {
   normalMultiplier: number;
@@ -689,40 +699,27 @@ export class GameState {
   }
 
   spawnFood(): void {
-    const gridWidth = this.worldSize().gridWidth;
-    const gridHeight = this.worldSize().gridHeight;
-    const snake = this.snake.segments();
-
-    let foodPosition: { x: number; y: number };
-    const maxAttempts = 100; // Prevent infinite loops
-    let attempts = 0;
-
-    // Find good position for food in the world
-    do {
-      foodPosition = {
-        // eslint-disable-next-line sonarjs/pseudo-random
-        x: Math.floor(Math.random() * gridWidth),
-        // eslint-disable-next-line sonarjs/pseudo-random
-        y: Math.floor(Math.random() * gridHeight),
-      };
-      attempts++;
-    } while (
-      attempts < maxAttempts &&
-      !this.isValidFoodPosition(foodPosition.x, foodPosition.y, snake)
-    );
-
-    // If we couldn't find a valid position after many attempts, give up.
-    if (attempts >= maxAttempts) {
-      console.error(
-        "Failed to find a valid food position after many attempts.",
-      );
+    const currentFood = this.food();
+    if (currentFood.length >= FOOD_HARD_CAP) {
       return;
     }
 
-    // Use cryptographically secure random for golden food chance
+    if (
+      currentFood.length >= FOOD_SOFT_CAP &&
+      secureRandom() < FOOD_SKIP_CHANCE
+    ) {
+      return;
+    }
+
+    const snake = this.snake.segments();
+    const foodPosition = this.findFoodPosition(snake, currentFood);
+    if (!foodPosition) {
+      return;
+    }
+
     const randomArray = new Uint32Array(1);
     crypto.getRandomValues(randomArray);
-    const isGolden = randomArray[0] / 0xff_ff_ff_ff < 0.1;
+    const isGolden = randomArray[0] / 0xff_ff_ff_ff < GOLDEN_FOOD_CHANCE;
     const food: Food = {
       x: foodPosition.x,
       y: foodPosition.y,
@@ -732,10 +729,66 @@ export class GameState {
 
     this.food.update((current) => [...current, food]);
 
-    // eslint-disable-next-line sonarjs/pseudo-random
-    if (Math.random() < 0.1) {
-      this.spawnFood();
+    this.maybeSpawnBonusFood();
+  }
+
+  private findFoodPosition(
+    snake: SnakeSegment[],
+    existingFood: Food[],
+  ): { x: number; y: number } | null {
+    const viewport = this.viewport();
+
+    for (let attempt = 0; attempt < FOOD_MAX_SPAWN_ATTEMPTS; attempt++) {
+      const candidate = {
+        x: Math.floor(
+          secureRandom() * (viewport.right - viewport.left) + viewport.left,
+        ),
+        y: Math.floor(
+          secureRandom() * (viewport.bottom - viewport.top) + viewport.top,
+        ),
+      };
+      if (
+        this.isValidFoodPositionInViewport(
+          candidate.x,
+          candidate.y,
+          snake,
+          existingFood,
+        )
+      ) {
+        return candidate;
+      }
     }
+
+    // Fallback: viewport may be too cramped (e.g. long snake at world edge).
+    // Search the full world but still avoid the snake body.
+    const gridWidth = this.worldSize().gridWidth;
+    const gridHeight = this.worldSize().gridHeight;
+    for (let attempt = 0; attempt < FOOD_MAX_SPAWN_ATTEMPTS; attempt++) {
+      const candidate = {
+        x: Math.floor(secureRandom() * gridWidth),
+        y: Math.floor(secureRandom() * gridHeight),
+      };
+      if (
+        this.isValidFoodPosition(candidate.x, candidate.y, snake) &&
+        !existingFood.some((f) => f.x === candidate.x && f.y === candidate.y)
+      ) {
+        console.warn(
+          "Food spawned outside viewport — fallback to world-wide search.",
+        );
+        return candidate;
+      }
+    }
+
+    console.error("Failed to find a valid food position after many attempts.");
+    return null;
+  }
+
+  private maybeSpawnBonusFood(): void {
+    if (secureRandom() >= FOOD_BONUS_CHANCE) {
+      return;
+    }
+
+    this.spawnFood();
   }
 
   /**
@@ -749,7 +802,32 @@ export class GameState {
     snake: SnakeSegment[],
   ): boolean {
     // Check if snake is already there
-    return !snake.some((segment) => segment.x === x && segment.y === y);
+    return !snake.some(
+      (segment) =>
+        Math.hypot(segment.x - x, segment.y - y) <= FOOD_SNAKE_OCCUPANCY_RADIUS,
+    );
+  }
+
+  private isValidFoodPositionInViewport(
+    x: number,
+    y: number,
+    snake: SnakeSegment[],
+    existingFood: Food[],
+  ): boolean {
+    if (!this.isValidFoodPosition(x, y, snake)) {
+      return false;
+    }
+    if (existingFood.some((f) => f.x === x && f.y === y)) {
+      return false;
+    }
+    const head = snake.length > 0 ? snake[0] : null;
+    if (
+      head &&
+      Math.hypot(x - head.x, y - head.y) < FOOD_MIN_DISTANCE_FROM_HEAD
+    ) {
+      return false;
+    }
+    return true;
   }
 
   // Save/Load functionality
