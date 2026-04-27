@@ -20,7 +20,7 @@ export class Store {
       await this.#persistantStorage.init();
       return Object.fromEntries(
         await this.#persistantStorage.entries(),
-      ) as unknown as HungryStore;
+      );
     },
   });
 
