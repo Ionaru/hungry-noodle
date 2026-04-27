@@ -30,13 +30,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ secrets.HNR_GH_APP_ID }}
           private-key: ${{ secrets.HNR_GH_APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: main
@@ -74,7 +74,7 @@ jobs:
         run: git push origin HEAD:main --follow-tags
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "Hungry Noodle ${{ env.TAGGED_VERSION }}"
           tag_name: ${{ env.TAGGED_VERSION }}

@@ -11,7 +11,7 @@ runs:
         java-version: ${{ env.JAVA_VERSION }}
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
 
     - name: Install NDK
       run: sdkmanager "ndk;${{ env.NDK_VERSION }}"

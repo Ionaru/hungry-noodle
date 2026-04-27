@@ -18,7 +18,7 @@ jobs:
     name: Audit dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-js
       - run: pnpm audit --prod
 
@@ -27,7 +27,7 @@ jobs:
     needs: audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-js
       - run: pnpm run check
 
@@ -36,7 +36,7 @@ jobs:
     needs: audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-js
       - run: pnpm test
 
@@ -47,18 +47,18 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-js
       - uses: ./.github/actions/build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: android-app-apk
+          archive: false
           if-no-files-found: error
           path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: android-app-bundle
+          archive: false
           if-no-files-found: error
           path: src-tauri/gen/android/app/build/outputs/bundle/universalRelease/app-universal-release.aab
