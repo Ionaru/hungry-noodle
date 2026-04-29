@@ -13,6 +13,11 @@ export const routes: Routes = [
   },
   {
     path: "play",
+    loadComponent: () =>
+      import("./components/mode-select/mode-select").then((m) => m.ModeSelect),
+  },
+  {
+    path: "play/endless",
     loadComponent: () => import("./components/play/play").then((m) => m.Play),
   },
   // Placeholder routes for future implementation

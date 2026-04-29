@@ -5,7 +5,6 @@ import {
   faCircle,
   faGamepad,
   faLeaf,
-  faSignalBars,
   faSliders,
   faStar,
   faVolume,
@@ -153,14 +152,7 @@ export class MainMenu implements OnInit {
         id: "play",
         label: hasSavedGame ? "Continue" : "Quick Play",
         icon: faGamepad,
-        route: "/play",
-      },
-      {
-        id: "progression",
-        label: "Journey",
-        icon: faSignalBars,
-        route: "/progression",
-        disabled: true,
+        route: hasSavedGame ? "/play/endless" : "/play",
       },
       {
         id: "challenges",
