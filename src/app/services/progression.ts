@@ -21,6 +21,7 @@ export interface PlayerStats {
   totalScore: number;
   highScore: number;
   totalLength: number;
+  longestSnake: number;
   perfectGames: number;
   playTime: number; // in seconds
 }
@@ -47,6 +48,7 @@ export class Progression {
     totalScore: 0,
     highScore: 0,
     totalLength: 0,
+    longestSnake: 0,
     perfectGames: 0,
     playTime: 0,
   });
@@ -117,6 +119,7 @@ export class Progression {
       ...current,
       gamesPlayed: current.gamesPlayed + 1,
       highScore: Math.max(current.highScore, update.currentScore),
+      longestSnake: Math.max(current.longestSnake, update.currentLength),
       playTime: current.playTime + update.playTime,
       totalLength: current.totalLength + update.currentLength,
       totalScore: current.totalScore + update.currentScore,
@@ -126,6 +129,7 @@ export class Progression {
     this.#store.write(StoreKey.GamesPlayed, this.playerStats().gamesPlayed);
     this.#store.write(StoreKey.TotalScore, this.playerStats().totalScore);
     this.#store.write(StoreKey.TotalLength, this.playerStats().totalLength);
+    this.#store.write(StoreKey.LongestSnake, this.playerStats().longestSnake);
     this.#store.write(StoreKey.PerfectGames, this.playerStats().perfectGames);
     this.#store.write(StoreKey.PlayTime, this.playerStats().playTime);
   }
@@ -208,6 +212,7 @@ export class Progression {
         totalScore: this.#store.totalScore() ?? 0,
         highScore: this.#store.highScore() ?? 0,
         totalLength: this.#store.totalLength() ?? 0,
+        longestSnake: this.#store.longestSnake() ?? 0,
         perfectGames: this.#store.perfectGames() ?? 0,
         playTime: this.#store.playTime() ?? 0,
       }));

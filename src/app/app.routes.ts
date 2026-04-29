@@ -15,12 +15,19 @@ export const routes: Routes = [
     path: "play",
     loadComponent: () => import("./components/play/play").then((m) => m.Play),
   },
-  // Placeholder routes for future implementation
   {
     path: "progression",
-    loadComponent: () =>
-      import("./components/main-menu/main-menu").then((m) => m.MainMenu), // Temporary redirect
+    redirectTo: "/progression/high-scores",
+    pathMatch: "full",
   },
+  {
+    path: "progression/high-scores",
+    loadComponent: () =>
+      import("./components/progression/high-scores/high-scores").then(
+        (m) => m.HighScores,
+      ),
+  },
+  // Placeholder routes for future implementation
   {
     path: "shop",
     loadComponent: () =>

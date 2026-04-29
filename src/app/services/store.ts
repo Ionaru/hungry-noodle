@@ -34,6 +34,9 @@ export class Store {
   readonly totalLength = computed(
     () => this.#store.value()?.[StoreKey.TotalLength],
   );
+  readonly longestSnake = computed(
+    () => this.#store.value()?.[StoreKey.LongestSnake],
+  );
   readonly perfectGames = computed(
     () => this.#store.value()?.[StoreKey.PerfectGames],
   );
