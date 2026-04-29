@@ -157,9 +157,9 @@ export class MainMenu implements OnInit {
       },
       {
         id: "progression",
-        label: "High Scores",
+        label: "Progression",
         icon: faSignalBars,
-        route: "/progression/high-scores",
+        route: "/progression",
       },
       {
         id: "challenges",

@@ -17,11 +17,6 @@ export const routes: Routes = [
   },
   {
     path: "progression",
-    redirectTo: "/progression/high-scores",
-    pathMatch: "full",
-  },
-  {
-    path: "progression/high-scores",
     loadComponent: () =>
       import("./components/progression/high-scores/high-scores").then(
         (m) => m.HighScores,

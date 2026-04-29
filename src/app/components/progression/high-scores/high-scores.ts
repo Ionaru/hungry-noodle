@@ -1,5 +1,7 @@
 import { Component, computed, inject } from "@angular/core";
 import { Router } from "@angular/router";
+import { faAngleLeft } from "@awesome.me/kit-fa99832706/icons/slab/regular";
+import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 import { AudioService } from "../../../audio/audio.service";
 import { SfxType } from "../../../audio/sfx";
@@ -8,30 +10,26 @@ import { FluidContainer } from "../../containers/fluid-container";
 
 @Component({
   selector: "app-high-scores",
-  imports: [FluidContainer],
+  imports: [FaIconComponent, FluidContainer],
   template: `
     <app-fluid-container
       class="font-gorditas from-primary to-secondary bg-linear-to-br/srgb"
     >
       <div class="flex h-full flex-col p-6">
-        <!-- Header -->
         <div class="mb-6 flex items-center gap-3">
           <button
             (click)="goBack()"
             aria-label="Back to menu"
             class="flex h-10 w-10 transform items-center justify-center rounded-full bg-white/30 text-xl font-bold text-black backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white/50 active:scale-95"
           >
-            &larr;
+            <fa-icon [icon]="faAngleLeft" />
           </button>
-          <h1
-            class="text-3xl font-bold text-black drop-shadow-lg sm:text-4xl"
-          >
+          <h1 class="text-3xl font-bold text-black drop-shadow-lg sm:text-4xl">
             High Scores
           </h1>
         </div>
 
         @if (isEmpty()) {
-          <!-- Empty state -->
           <div
             class="flex flex-1 flex-col items-center justify-center text-center"
           >
@@ -45,7 +43,6 @@ import { FluidContainer } from "../../containers/fluid-container";
             </div>
           </div>
         } @else {
-          <!-- Stats grid -->
           <div class="grid grid-cols-2 gap-3 text-black sm:gap-4">
             <div
               class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
@@ -72,16 +69,10 @@ import { FluidContainer } from "../../containers/fluid-container";
               <div class="mt-1 text-sm opacity-75">Play Time</div>
             </div>
             <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
+              class="col-span-2 flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
             >
               <div class="text-3xl font-bold">{{ stats().totalLength }}</div>
               <div class="mt-1 text-sm opacity-75">Total Length</div>
-            </div>
-            <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ stats().perfectGames }}</div>
-              <div class="mt-1 text-sm opacity-75">Perfect Games</div>
             </div>
           </div>
         }
@@ -93,6 +84,8 @@ export class HighScores {
   readonly #router = inject(Router);
   readonly #progression = inject(Progression);
   readonly #audio = inject(AudioService);
+
+  readonly faAngleLeft = faAngleLeft;
 
   readonly stats = this.#progression.playerStats;
   readonly isEmpty = computed(() => this.stats().gamesPlayed === 0);

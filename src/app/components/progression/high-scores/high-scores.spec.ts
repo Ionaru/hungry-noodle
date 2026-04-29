@@ -18,7 +18,6 @@ const emptyStats: PlayerStats = {
   highScore: 0,
   totalLength: 0,
   longestSnake: 0,
-  perfectGames: 0,
   playTime: 0,
 };
 
@@ -67,7 +66,6 @@ describe("HighScores", () => {
       highScore: 99,
       totalLength: 130,
       longestSnake: 42,
-      perfectGames: 2,
       playTime: 3725,
     });
 
@@ -84,8 +82,6 @@ describe("HighScores", () => {
     expect(text).toContain("1h 2m");
     expect(text).toContain("Total Length");
     expect(text).toContain("130");
-    expect(text).toContain("Perfect Games");
-    expect(text).toContain("2");
     expect(text).not.toContain("Play your first game");
   });
 
@@ -96,7 +92,6 @@ describe("HighScores", () => {
       highScore: 10,
       totalLength: 5,
       longestSnake: 5,
-      perfectGames: 0,
       playTime: 30,
     });
 
