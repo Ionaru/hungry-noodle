@@ -1,6 +1,6 @@
 import { Food } from "../../food/types";
 import { TerrainType } from "../../map/types";
-import { SnakeSegment } from "../../snake/types";
+import { SnakeSegment, SnakeTypeId } from "../../snake/types";
 
 export enum StoreKey {
   HighScore = "highScore",
@@ -34,6 +34,7 @@ export interface SavedGame {
   worldHeight: number;
   camera: { x: number; y: number };
   mapTerrainType?: TerrainType;
+  selectedSnakeType?: SnakeTypeId;
 }
 
 export interface HungryStore {

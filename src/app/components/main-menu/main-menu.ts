@@ -153,7 +153,7 @@ export class MainMenu implements OnInit {
         id: "play",
         label: hasSavedGame ? "Continue" : "Quick Play",
         icon: faGamepad,
-        route: "/play",
+        route: hasSavedGame ? "/play" : "/play/snake-select",
       },
       {
         id: "progression",

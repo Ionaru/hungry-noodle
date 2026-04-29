@@ -15,6 +15,13 @@ export const routes: Routes = [
     path: "play",
     loadComponent: () => import("./components/play/play").then((m) => m.Play),
   },
+  {
+    path: "play/snake-select",
+    loadComponent: () =>
+      import("./components/play/snake-select/snake-select").then(
+        (m) => m.SnakeSelect,
+      ),
+  },
   // Placeholder routes for future implementation
   {
     path: "progression",

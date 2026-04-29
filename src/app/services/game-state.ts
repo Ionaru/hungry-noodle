@@ -6,6 +6,7 @@ import { Food, FoodType } from "../food/types";
 import { MapState } from "../map/state";
 import { TerrainType, type MapConfig } from "../map/types";
 import { Snake } from "../snake/snake";
+import { DEFAULT_SNAKE_TYPE, SnakeTypeId } from "../snake/snake-types";
 import { SnakeSegment } from "../snake/types";
 import { secureRandom } from "../utils/random";
 
@@ -53,6 +54,7 @@ export class GameState {
   readonly gameStatus = signal<GameStatus>("playing");
   readonly direction = signal<Direction | null>(null);
   readonly gameTime = signal(0);
+  readonly selectedSnakeType = signal<SnakeTypeId>(DEFAULT_SNAKE_TYPE);
 
   // Canvas and game settings - responsive for mobile
   readonly canvasWidth = signal(320); // Will be updated dynamically
@@ -844,6 +846,7 @@ export class GameState {
       worldHeight: this.worldHeight(),
       camera: this.camera(),
       mapTerrainType: this.#map.mapData().config.terrainType,
+      selectedSnakeType: this.selectedSnakeType(),
     };
   }
 
@@ -881,6 +884,7 @@ export class GameState {
     this.direction.set(savedGame.direction);
     this.gameTime.set(savedGame.gameTime);
     this.camera.set({ ...savedGame.camera });
+    this.selectedSnakeType.set(savedGame.selectedSnakeType ?? DEFAULT_SNAKE_TYPE);
 
     // Reset internal state that can't be safely serialized
     this.#pendingDirection = null;

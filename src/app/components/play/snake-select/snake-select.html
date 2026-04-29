@@ -1,0 +1,148 @@
+<app-fluid-container
+  class="font-gorditas from-primary to-secondary bg-linear-to-br/srgb"
+>
+  <div class="flex h-full flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 text-black">
+      <button
+        type="button"
+        (click)="back()"
+        class="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm font-semibold backdrop-blur-sm hover:bg-white/30"
+      >
+        <fa-icon [icon]="iconBack" />
+        Back
+      </button>
+      <h1 class="text-xl font-bold drop-shadow-lg sm:text-2xl">
+        Choose your noodle
+      </h1>
+      <span class="w-16"></span>
+    </div>
+
+    <!-- Carousel -->
+    <div
+      #carousel
+      class="flex flex-1 snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 py-2 [&::-webkit-scrollbar]:hidden"
+      style="scrollbar-width: none"
+    >
+      @for (snake of visibleTypes(); track snake.id; let index = $index) {
+        <article
+          #card
+          [attr.data-snake-id]="snake.id"
+          [attr.aria-label]="snake.name"
+          class="flex w-full shrink-0 snap-center flex-col items-stretch"
+        >
+          <div
+            class="relative flex h-full flex-col overflow-hidden rounded-3xl bg-white/95 shadow-xl"
+          >
+            <!-- Preview area -->
+            <div
+              class="relative flex h-56 items-center justify-center bg-linear-to-br {{ snake.accentClass }} text-white"
+            >
+              @if (snake.previewVideoUrl) {
+                <video
+                  [src]="snake.previewVideoUrl"
+                  class="h-full w-full object-cover"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                ></video>
+              } @else {
+                <fa-icon
+                  [icon]="snake.icon"
+                  class="text-8xl drop-shadow-lg"
+                  [class.animate-pulse]="!isActiveLocked() || activeType()?.id !== snake.id"
+                ></fa-icon>
+              }
+
+              @if (isRecommended(snake.id)) {
+                <span
+                  class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-yellow-900 shadow-md"
+                >
+                  <fa-icon [icon]="iconRecommended" />
+                  Recommended
+                </span>
+              }
+            </div>
+
+            <!-- Body -->
+            <div class="flex flex-1 flex-col gap-3 p-5 text-gray-800">
+              <div>
+                <h2 class="text-2xl font-bold">{{ snake.name }}</h2>
+                <p class="text-sm text-gray-500 italic">
+                  {{ snake.tagline }}
+                </p>
+              </div>
+
+              <p class="text-sm leading-relaxed text-gray-700">
+                {{ snake.description }}
+              </p>
+
+              <div class="rounded-2xl bg-gray-100 p-3">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  Special power
+                </p>
+                <p class="mt-1 text-sm font-medium text-gray-800">
+                  {{ snake.specialPower }}
+                </p>
+              </div>
+
+              <ul class="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                @for (trait of snake.characteristics; track trait) {
+                  <li class="flex items-center gap-1">
+                    <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
+                    {{ trait }}
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Locked overlay -->
+            @if (!isUnlocked(snake.id)) {
+              <div
+                class="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-3xl bg-black/60 p-6 text-center text-white backdrop-blur-sm"
+              >
+                <fa-icon [icon]="iconLock" class="text-5xl" />
+                <p class="text-lg font-bold">Locked</p>
+                <p class="text-sm opacity-90">{{ snake.unlockHint }}</p>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- Page indicator dots -->
+    <div class="flex items-center justify-center gap-2 py-3">
+      @for (snake of visibleTypes(); track snake.id; let index = $index) {
+        <button
+          type="button"
+          (click)="scrollToIndex(index)"
+          [attr.aria-label]="'Go to ' + snake.name"
+          [class]="
+            activeIndex() === index
+              ? 'h-2 w-6 rounded-full bg-black transition-all'
+              : 'h-2 w-2 rounded-full bg-black/30 transition-all'
+          "
+        ></button>
+      }
+    </div>
+
+    <!-- Bottom action bar -->
+    <div class="bg-white/30 p-4 backdrop-blur-md">
+      <button
+        type="button"
+        (click)="start()"
+        [disabled]="isActiveLocked()"
+        class="flex w-full items-center justify-center gap-3 rounded-2xl bg-black px-4 py-4 text-lg font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-70"
+      >
+        <fa-icon [icon]="iconStart" />
+        @if (isActiveLocked()) {
+          <span>Locked</span>
+        } @else {
+          <span>Start with {{ activeType()?.name }}</span>
+        }
+      </button>
+    </div>
+  </div>
+</app-fluid-container>
