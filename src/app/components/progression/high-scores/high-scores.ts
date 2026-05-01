@@ -8,9 +8,11 @@ import { SfxType } from "../../../audio/sfx";
 import { Progression } from "../../../services/progression";
 import { FluidContainer } from "../../containers/fluid-container";
 
+import { StatCard } from "./stat-card";
+
 @Component({
   selector: "app-high-scores",
-  imports: [FaIconComponent, FluidContainer],
+  imports: [FaIconComponent, FluidContainer, StatCard],
   template: `
     <app-fluid-container
       class="font-gorditas from-primary to-secondary bg-linear-to-br/srgb"
@@ -20,7 +22,7 @@ import { FluidContainer } from "../../containers/fluid-container";
           <button
             (click)="goBack()"
             aria-label="Back to menu"
-            class="flex h-10 w-10 transform items-center justify-center rounded-full bg-white/30 text-xl font-bold text-black backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white/50 active:scale-95"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 text-xl font-bold text-black backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white/50 active:scale-95"
           >
             <fa-icon [icon]="faAngleLeft" />
           </button>
@@ -29,7 +31,9 @@ import { FluidContainer } from "../../containers/fluid-container";
           </h1>
         </div>
 
-        @if (isEmpty()) {
+        @let s = stats();
+
+        @if (s.gamesPlayed === 0) {
           <div
             class="flex flex-1 flex-col items-center justify-center text-center"
           >
@@ -44,36 +48,15 @@ import { FluidContainer } from "../../containers/fluid-container";
           </div>
         } @else {
           <div class="grid grid-cols-2 gap-3 text-black sm:gap-4">
-            <div
-              class="col-span-2 flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ stats().longestSnake }}</div>
-              <div class="mt-1 text-sm opacity-75">Longest Snake</div>
-            </div>
-            <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ stats().highScore }}</div>
-              <div class="mt-1 text-sm opacity-75">Best Score</div>
-            </div>
-            <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ stats().gamesPlayed }}</div>
-              <div class="mt-1 text-sm opacity-75">Games Played</div>
-            </div>
-            <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ playTimeLabel() }}</div>
-              <div class="mt-1 text-sm opacity-75">Play Time</div>
-            </div>
-            <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
-            >
-              <div class="text-3xl font-bold">{{ stats().totalLength }}</div>
-              <div class="mt-1 text-sm opacity-75">Total Length</div>
-            </div>
+            <app-stat-card
+              [value]="s.longestSnake"
+              label="Longest Snake"
+              [highlight]="true"
+            />
+            <app-stat-card [value]="s.highScore" label="Best Score" />
+            <app-stat-card [value]="s.gamesPlayed" label="Games Played" />
+            <app-stat-card [value]="playTimeLabel()" label="Play Time" />
+            <app-stat-card [value]="s.totalLength" label="Total Length" />
           </div>
         }
       </div>
@@ -88,7 +71,6 @@ export class HighScores {
   readonly faAngleLeft = faAngleLeft;
 
   readonly stats = this.#progression.playerStats;
-  readonly isEmpty = computed(() => this.stats().gamesPlayed === 0);
   readonly playTimeLabel = computed(() =>
     formatPlayTime(this.stats().playTime),
   );
@@ -100,11 +82,11 @@ export class HighScores {
 }
 
 function formatPlayTime(totalSeconds: number): string {
-  if (totalSeconds <= 0) return "0m";
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = Math.floor(totalSeconds % 60);
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(s / 3600);
+  const minutes = Math.floor((s % 3600) / 60);
   if (hours > 0) return `${hours.toString()}h ${minutes.toString()}m`;
+  const seconds = s % 60;
   if (minutes > 0) return `${minutes.toString()}m ${seconds.toString()}s`;
   return `${seconds.toString()}s`;
 }

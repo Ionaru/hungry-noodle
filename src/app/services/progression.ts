@@ -113,7 +113,8 @@ export class Progression {
 
   // Progression management
   updateStats(update: UpdatePlayerStats): void {
-    this.playerStats.update((current) => ({
+    const current = this.playerStats();
+    const next: PlayerStats = {
       ...current,
       gamesPlayed: current.gamesPlayed + 1,
       highScore: Math.max(current.highScore, update.currentScore),
@@ -121,14 +122,15 @@ export class Progression {
       playTime: current.playTime + update.playTime,
       totalLength: current.totalLength + update.currentLength,
       totalScore: current.totalScore + update.currentScore,
-    }));
+    };
+    this.playerStats.set(next);
 
-    this.#store.write(StoreKey.HighScore, this.playerStats().highScore);
-    this.#store.write(StoreKey.GamesPlayed, this.playerStats().gamesPlayed);
-    this.#store.write(StoreKey.TotalScore, this.playerStats().totalScore);
-    this.#store.write(StoreKey.TotalLength, this.playerStats().totalLength);
-    this.#store.write(StoreKey.LongestSnake, this.playerStats().longestSnake);
-    this.#store.write(StoreKey.PlayTime, this.playerStats().playTime);
+    this.#store.write(StoreKey.HighScore, next.highScore);
+    this.#store.write(StoreKey.GamesPlayed, next.gamesPlayed);
+    this.#store.write(StoreKey.TotalScore, next.totalScore);
+    this.#store.write(StoreKey.TotalLength, next.totalLength);
+    this.#store.write(StoreKey.LongestSnake, next.longestSnake);
+    this.#store.write(StoreKey.PlayTime, next.playTime);
   }
 
   unlockMap(mapId: string): void {
