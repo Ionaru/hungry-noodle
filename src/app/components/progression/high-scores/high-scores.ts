@@ -1,31 +1,28 @@
 import { Component, computed, inject } from "@angular/core";
 import { Router } from "@angular/router";
-import { faAngleLeft } from "@awesome.me/kit-fa99832706/icons/slab/regular";
-import { FaIconComponent } from "@fortawesome/angular-fontawesome";
 
 import { AudioService } from "../../../audio/audio.service";
 import { SfxType } from "../../../audio/sfx";
 import { Progression } from "../../../services/progression";
+import { BackButton } from "../../buttons/back-button";
 import { FluidContainer } from "../../containers/fluid-container";
 
 import { StatCard } from "./stat-card";
 
 @Component({
   selector: "app-high-scores",
-  imports: [FaIconComponent, FluidContainer, StatCard],
+  imports: [BackButton, FluidContainer, StatCard],
   template: `
     <app-fluid-container
       class="font-gorditas from-primary to-secondary bg-linear-to-br/srgb"
     >
       <div class="flex h-full flex-col p-6">
-        <div class="mb-6 flex items-center gap-3">
-          <button
-            (click)="goBack()"
-            aria-label="Back to menu"
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 text-xl font-bold text-black backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:bg-white/50 active:scale-95"
-          >
-            <fa-icon [icon]="faAngleLeft" />
-          </button>
+        <div class="relative mb-6 flex items-center justify-center">
+          <app-back-button
+            class="absolute left-0"
+            ariaLabel="Back to menu"
+            (clicked)="goBack()"
+          />
           <h1 class="text-3xl font-bold text-black drop-shadow-lg sm:text-4xl">
             High Scores
           </h1>
@@ -67,8 +64,6 @@ export class HighScores {
   readonly #router = inject(Router);
   readonly #progression = inject(Progression);
   readonly #audio = inject(AudioService);
-
-  readonly faAngleLeft = faAngleLeft;
 
   readonly stats = this.#progression.playerStats;
   readonly playTimeLabel = computed(() =>
