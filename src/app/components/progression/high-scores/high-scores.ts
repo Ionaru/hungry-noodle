@@ -45,16 +45,16 @@ import { FluidContainer } from "../../containers/fluid-container";
         } @else {
           <div class="grid grid-cols-2 gap-3 text-black sm:gap-4">
             <div
-              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
+              class="col-span-2 flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
             >
-              <div class="text-3xl font-bold">{{ stats().highScore }}</div>
-              <div class="mt-1 text-sm opacity-75">Best Score</div>
+              <div class="text-3xl font-bold">{{ stats().longestSnake }}</div>
+              <div class="mt-1 text-sm opacity-75">Longest Snake</div>
             </div>
             <div
               class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
             >
-              <div class="text-3xl font-bold">{{ stats().longestSnake }}</div>
-              <div class="mt-1 text-sm opacity-75">Longest Snake</div>
+              <div class="text-3xl font-bold">{{ stats().highScore }}</div>
+              <div class="mt-1 text-sm opacity-75">Best Score</div>
             </div>
             <div
               class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
@@ -69,7 +69,7 @@ import { FluidContainer } from "../../containers/fluid-container";
               <div class="mt-1 text-sm opacity-75">Play Time</div>
             </div>
             <div
-              class="col-span-2 flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
+              class="flex flex-col items-center rounded-2xl bg-white/20 p-4 text-center backdrop-blur-sm"
             >
               <div class="text-3xl font-bold">{{ stats().totalLength }}</div>
               <div class="mt-1 text-sm opacity-75">Total Length</div>

@@ -54,7 +54,7 @@ describe("HighScores", () => {
   test("renders empty state when no games have been played", () => {
     fixture.detectChanges();
 
-    const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
+    const text = (fixture.nativeElement as HTMLElement).textContent;
     expect(text).toContain("Play your first game");
     expect(text).not.toContain("Best Score");
   });
@@ -71,7 +71,7 @@ describe("HighScores", () => {
 
     fixture.detectChanges();
 
-    const text = (fixture.nativeElement as HTMLElement).textContent ?? "";
+    const text = (fixture.nativeElement as HTMLElement).textContent;
     expect(text).toContain("Best Score");
     expect(text).toContain("99");
     expect(text).toContain("Longest Snake");
@@ -99,9 +99,9 @@ describe("HighScores", () => {
 
     const button = (fixture.nativeElement as HTMLElement).querySelector(
       'button[aria-label="Back to menu"]',
-    ) as HTMLButtonElement | null;
+    );
     expect(button).not.toBeNull();
-    button?.click();
+    (button as HTMLButtonElement | null)?.click();
 
     expect(audioPlaySfx).toHaveBeenCalled();
     expect(routerNavigate).toHaveBeenCalledWith(["/menu"]);
