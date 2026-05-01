@@ -21,7 +21,7 @@ export interface PlayerStats {
   totalScore: number;
   highScore: number;
   totalLength: number;
-  perfectGames: number;
+  longestSnake: number;
   playTime: number; // in seconds
 }
 
@@ -47,7 +47,7 @@ export class Progression {
     totalScore: 0,
     highScore: 0,
     totalLength: 0,
-    perfectGames: 0,
+    longestSnake: 0,
     playTime: 0,
   });
 
@@ -113,21 +113,24 @@ export class Progression {
 
   // Progression management
   updateStats(update: UpdatePlayerStats): void {
-    this.playerStats.update((current) => ({
+    const current = this.playerStats();
+    const next: PlayerStats = {
       ...current,
       gamesPlayed: current.gamesPlayed + 1,
       highScore: Math.max(current.highScore, update.currentScore),
+      longestSnake: Math.max(current.longestSnake, update.currentLength),
       playTime: current.playTime + update.playTime,
       totalLength: current.totalLength + update.currentLength,
       totalScore: current.totalScore + update.currentScore,
-    }));
+    };
+    this.playerStats.set(next);
 
-    this.#store.write(StoreKey.HighScore, this.playerStats().highScore);
-    this.#store.write(StoreKey.GamesPlayed, this.playerStats().gamesPlayed);
-    this.#store.write(StoreKey.TotalScore, this.playerStats().totalScore);
-    this.#store.write(StoreKey.TotalLength, this.playerStats().totalLength);
-    this.#store.write(StoreKey.PerfectGames, this.playerStats().perfectGames);
-    this.#store.write(StoreKey.PlayTime, this.playerStats().playTime);
+    this.#store.write(StoreKey.HighScore, next.highScore);
+    this.#store.write(StoreKey.GamesPlayed, next.gamesPlayed);
+    this.#store.write(StoreKey.TotalScore, next.totalScore);
+    this.#store.write(StoreKey.TotalLength, next.totalLength);
+    this.#store.write(StoreKey.LongestSnake, next.longestSnake);
+    this.#store.write(StoreKey.PlayTime, next.playTime);
   }
 
   unlockMap(mapId: string): void {
@@ -208,7 +211,7 @@ export class Progression {
         totalScore: this.#store.totalScore() ?? 0,
         highScore: this.#store.highScore() ?? 0,
         totalLength: this.#store.totalLength() ?? 0,
-        perfectGames: this.#store.perfectGames() ?? 0,
+        longestSnake: this.#store.longestSnake() ?? 0,
         playTime: this.#store.playTime() ?? 0,
       }));
     });

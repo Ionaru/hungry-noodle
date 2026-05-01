@@ -7,7 +7,7 @@ export enum StoreKey {
   GamesPlayed = "gamesPlayed",
   TotalScore = "totalScore",
   TotalLength = "totalLength",
-  PerfectGames = "perfectGames",
+  LongestSnake = "longestSnake",
   PlayTime = "playTime",
   NoodleCoins = "noodleCoins",
   GoldenNoodles = "goldenNoodles",
@@ -41,7 +41,7 @@ export interface HungryStore {
   [StoreKey.GamesPlayed]?: number;
   [StoreKey.TotalScore]?: number;
   [StoreKey.TotalLength]?: number;
-  [StoreKey.PerfectGames]?: number;
+  [StoreKey.LongestSnake]?: number;
   [StoreKey.PlayTime]?: number;
   [StoreKey.NoodleCoins]?: number;
   [StoreKey.GoldenNoodles]?: number;
